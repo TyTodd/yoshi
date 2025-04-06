@@ -61,9 +61,22 @@
     <div style="width: 80%; margin: 0 auto">
       <div id="map" style="width: 100%; height: 75%"></div>
     </div>
+    <div
+      id="tooltip"
+      style="
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 8px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 999;
+        display: none;
+      "
+    ></div>
 
     <!-- Legend -->
-    <!-- Gradient Legend -->
     <div
       id="legend"
       style="
@@ -249,6 +262,26 @@
           if (val == null || isNaN(val)) return [200, 200, 200, 180];
           const c = d3.color(colorScale(val));
           return [c.r, c.g, c.b, c.opacity * 255];
+        },
+        onHover: ({ x, y, object }) => {
+          const tooltip = document.getElementById("tooltip");
+          if (object) {
+            const name = object.properties.blockgr2020_ctr_neighb_name?.trim();
+            const yearRates = corpData.get(name);
+            const val = yearRates ? yearRates[currYear] : undefined;
+            tooltip.style.display = "block";
+            tooltip.style.left = `${x + 10}px`;
+            tooltip.style.top = `${y + 10}px`;
+            tooltip.innerHTML = `
+          <strong>${name}</strong><br/>
+          Year: ${currYear}<br/>
+          Corporate Ownership: ${
+            val != null ? (val * 100).toFixed(1) + "%" : "N/A"
+          }
+        `;
+          } else {
+            tooltip.style.display = "none";
+          }
         },
         updateTriggers: {
           getElevation: [scale, currYear],
