@@ -1,41 +1,110 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Interleaving deck.gl with Mapbox Layers using MapboxOverlay</title>
+    <meta charset="utf-8" />
+    <title>Boston Corporate Ownership 3‑D Map</title>
 
+    <!--‑‑ External libraries ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑ -->
     <script src="https://unpkg.com/deck.gl@^9.0.0-beta/dist.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link
-      href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css"
       rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css"
     />
-    <link rel="stylesheet" href="/yoshi/FP2/src/lib/global.css" />
-  </head>
 
-  <body style="margin: 0">
-    <!-- Header row with title and slider -->
-    <div
-      style="
+    <!--‑‑ Styles ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑ -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
+
+      /* Header ------------------------------------------------------------ */
+      #header {
+        position: sticky;
+        top: 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 1rem 2rem;
-      "
-    >
-      <h2 style="margin: 0">
-        Corporate Ownership Rates in Boston Neighborhoods:
-      </h2>
+        background: #fff;
+        z-index: 10;
+      }
+      #filter {
+        width: 300px;
+      }
+      #filter label {
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+      }
 
-      <div class="filter" style="width: 300px">
-        <label
-          for="year-slider"
-          style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem"
-        >
+      /* Map container ----------------------------------------------------- */
+      #map-wrapper {
+        width: 80%;
+        margin: 0 auto;
+      }
+      #map {
+        width: 100%;
+        height: 75vh;
+      }
+
+      /* Tooltip ----------------------------------------------------------- */
+      #tooltip {
+        position: absolute;
+        display: none;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        font-size: 13px;
+        padding: 8px 10px;
+        border-radius: 4px;
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      /* Legend ------------------------------------------------------------ */
+      #legend {
+        position: absolute;
+        bottom: 2rem;
+        right: 2rem;
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+        width: 160px;
+        z-index: 999;
+      }
+      #legend-gradient {
+        height: 12px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: linear-gradient(
+          to right,
+          #4593b6,
+          #77d8cc,
+          #f4ad62,
+          #c3424f
+        );
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--‑‑ Header with slider --------------------------------------------- -->
+    <div id="header">
+      <h2>Corporate Ownership Rates in Boston Neighborhoods</h2>
+
+      <div id="filter">
+        <label for="year-slider">
           Filter by year: <span id="year-value">2024</span>
         </label>
         <input
-          type="range"
           id="year-slider"
+          type="range"
           min="2004"
           max="2024"
           step="1"
@@ -48,309 +117,241 @@
             justify-content: space-between;
             font-size: 0.75rem;
             color: #555;
-            padding: 0 2px;
           "
         >
-          <span>2004</span>
-          <span>2024</span>
+          <span>2004</span><span>2024</span>
         </div>
       </div>
     </div>
 
-    <!-- Map -->
-    <div style="width: 80%; margin: 0 auto">
-      <div id="map" style="width: 100%; height: 75%"></div>
-    </div>
-    <div
-      id="tooltip"
-      style="
-        position: absolute;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 8px 10px;
-        border-radius: 4px;
-        font-size: 13px;
-        pointer-events: none;
-        z-index: 999;
-        display: none;
-      "
-    ></div>
+    <!--‑‑ Map ------------------------------------------------------------- -->
+    <div id="map-wrapper"><div id="map"></div></div>
 
-    <!-- Legend -->
-    <div
-      id="legend"
-      style="
-        position: absolute;
-        bottom: 2rem;
-        right: 2rem;
-        background-color: white;
-        padding: 10px 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        font-size: 12px;
-        z-index: 999;
-        width: 160px;
-      "
-    >
+    <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
+    <div id="tooltip"></div>
+
+    <div id="legend">
       <strong>Ownership Rate</strong>
-      <div
-        id="legend-gradient"
-        style="
-          height: 12px;
-          margin: 8px 0;
-          background: linear-gradient(
-            to right,
-            #4593b6,
-            #77d8cc,
-            #f4ad62,
-            #c3424f
-          );
-          border: 1px solid #ccc;
-          border-radius: 4px;
-        "
-      ></div>
+      <div id="legend-gradient"></div>
       <div style="display: flex; justify-content: space-between">
-        <span>0%</span>
-        <span>69%</span>
+        <span>0%</span><span>69%</span>
       </div>
     </div>
-  </body>
 
-  <script type="text/javascript">
-    const {
-      MapboxOverlay,
-      ScatterplotLayer,
-      ArcLayer,
-      GeoJsonLayer,
-      COORDINATE_SYSTEM,
-      AmbientLight,
-      PointLight,
-      LightingEffect,
-    } = deck;
+    <!--‑‑ Application script --------------------------------------------- -->
+    <script>
+      (function () {
+        /* ------------------------------------------------------------------
+         *  Constants & configuration
+         * ----------------------------------------------------------------*/
+        const START_YEAR = 2004;
+        const END_YEAR = 2024;
+        const INITIAL_YEAR = 2024;
 
-    mapboxgl.accessToken =
-      "pk.eyJ1IjoiYXV0dW1uYXJ0aXN0IiwiYSI6ImNtOTFtdTdvejAycTQyaW42aDA4M3duMGoifQ.ySZoxVyD5VLs_LUcDp3jPA";
+        const {
+          MapboxOverlay,
+          GeoJsonLayer,
+          COORDINATE_SYSTEM,
+          AmbientLight,
+          PointLight,
+          LightingEffect,
+        } = deck;
 
-    const map = new mapboxgl.Map({
-      container: "map",
-      style: "mapbox://styles/autumnartist/cm95dpgq200aw01qu4zs00wkv",
-      center: [-71.057083, 42.361145],
-      zoom: 10,
-      pitch: 45,
-      antialias: true,
-      projection: "mercator",
-    });
+        mapboxgl.accessToken =
+          "pk.eyJ1IjoiYXV0dW1uYXJ0aXN0IiwiYSI6ImNtOTFtdTdvejAycTQyaW42aDA4M3duMGoifQ.ySZoxVyD5VLs_LUcDp3jPA";
 
-    let corpData;
-    let geojson;
-    let deckOverlay;
+        /* ------------------------------------------------------------------
+         *  DOM references
+         * ----------------------------------------------------------------*/
+        const mapEl = document.getElementById("map");
+        const sliderEl = document.getElementById("year-slider");
+        const sliderLabel = document.getElementById("year-value");
+        const tooltipEl = document.getElementById("tooltip");
 
-    async function loadData() {
-      corpData = await d3.csv("merged_dataset_full.csv").then((data) => {
-        const corpMap = new Map();
+        /* ------------------------------------------------------------------
+         *  State
+         * ----------------------------------------------------------------*/
+        let geojson = null;
+        let corpData = null;
+        let deckOverlay = null;
 
-        data.forEach((d) => {
-          const hood = d.Neighborhood.trim();
-          const year = +d.Year;
-          const rate = +d.corp_own_rate;
-          if (!corpMap.has(hood)) corpMap.set(hood, {});
-          corpMap.get(hood)[year] = rate;
-        });
-        return corpMap;
-      });
-      console.log(corpData);
-
-      geojson = await fetch("boston_neighborhoods.geojson").then((res) =>
-        res.json()
-      );
-    }
-
-    async function init() {
-      await loadData();
-      deckOverlay = new MapboxOverlay({
-        interleaved: true,
-        layers: [createGeoJsonLayer(1, geojson, corpData, 2024)],
-      });
-      map.addControl(deckOverlay);
-      console.log("initizlized");
-
-      // Assuming map is already initialized here
-      const yearSlider = document.getElementById("year-slider");
-      const yearValue = document.getElementById("year-value");
-
-      yearSlider.addEventListener("input", () => {
-        yearValue.textContent = yearSlider.value;
-        const selectedYear = parseInt(yearSlider.value);
-        deckOverlay.setProps({
-          layers: [createGeoJsonLayer(1, geojson, corpData, selectedYear)],
-        });
-      });
-
-      // Optionally trigger it once on load
-      yearSlider.dispatchEvent(new Event("input"));
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-      init();
-    });
-
-    const ambientLight = new AmbientLight({
-      color: [255, 230, 200],
-      intensity: 1.0,
-    });
-
-    const pointLight = new PointLight({
-      color: [255, 230, 200],
-      intensity: 0.8,
-      position: [-71.057083, 42.361145, 8000], // longitude, latitude, altitude
-    });
-
-    const lightingEffect = new LightingEffect({ ambientLight, pointLight });
-
-    map.on("load", async () => {
-      render();
-    });
-
-    const minRate = 0.0;
-    const maxRate = 0.69;
-    const colorScale = d3
-      .scaleLinear()
-      // .domain([minRate, maxRate])
-      .domain(d3.range(minRate, maxRate, (maxRate - minRate) / 6)) // 6 colors → 5 segments
-      .range([
-        "#4593b6", // blue
-        "#77d8cc", // teal
-        // "#c4ff6f", // light green
-        "#f4ad62", // orange
-        "#c3424f", // red
-      ])
-
-      .interpolate(d3.interpolateLab);
-    const elevationScale = d3
-      .scaleLinear()
-      .domain([minRate, maxRate]) // Adjust this based on your min and max rate values
-      .range([100, 3000]);
-
-    function createGeoJsonLayer(scale, geojson, corpData, currYear) {
-      console.log("check check");
-      return new GeoJsonLayer({
-        id: "boston-3d",
-        data: geojson,
-        extruded: true,
-        wireframe: false,
-        pickable: true,
-        effects: [lightingEffect],
-        material: {
-          ambient: 0.6,
-          diffuse: 0.8,
-          shininess: 32,
-          specularColor: [60, 60, 60],
-        },
-        getElevation: (f) => {
-          const name = f.properties.blockgr2020_ctr_neighb_name?.trim();
-          const yearRates = corpData.get(name);
-          console.log("name:", name);
-          console.log("year:", currYear);
-          const rate = yearRates ? yearRates[currYear] : undefined;
-          console.log("rate; ", rate);
-          const baseHeight = rate ? elevationScale(rate) : 100;
-          return baseHeight * scale;
-        },
-        getFillColor: (f) => {
-          const name = f.properties.blockgr2020_ctr_neighb_name?.trim();
-          const yearRates = corpData.get(name);
-          const val = yearRates ? yearRates[currYear] : undefined;
-          if (val == null || isNaN(val)) return [200, 200, 200, 180];
-          const c = d3.color(colorScale(val));
-          return [c.r, c.g, c.b, c.opacity * 255];
-        },
-        onHover: ({ x, y, object }) => {
-          const tooltip = document.getElementById("tooltip");
-          if (object) {
-            const name = object.properties.blockgr2020_ctr_neighb_name?.trim();
-            const yearRates = corpData.get(name);
-            const val = yearRates ? yearRates[currYear] : undefined;
-            tooltip.style.display = "block";
-            tooltip.style.left = `${x + 10}px`;
-            tooltip.style.top = `${y + 10}px`;
-            tooltip.innerHTML = `
-          <strong>${name}</strong><br/>
-          Year: ${currYear}<br/>
-          Corporate Ownership: ${
-            val != null ? (val * 100).toFixed(1) + "%" : "N/A"
-          }
-        `;
-          } else {
-            tooltip.style.display = "none";
-          }
-        },
-        updateTriggers: {
-          getElevation: [scale, currYear],
-          getFillColor: currYear,
-        },
-
-        coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
-      });
-    }
-
-    async function render(currYear = 2024) {
-      const firstLabelLayerId = map
-        .getStyle()
-        .layers.find((layer) => layer.type === "symbol").id;
-
-      map.addLayer(
-        {
-          id: "3d-buildings",
-          source: "composite",
-          "source-layer": "building",
-          filter: ["==", "extrude", "true"],
-          type: "fill-extrusion",
-          minzoom: 15,
-          paint: {
-            "fill-extrusion-color": "#aaa",
-            "fill-extrusion-height": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              15,
-              0,
-              15.05,
-              ["get", "height"],
-            ],
-            "fill-extrusion-base": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              15,
-              0,
-              15.05,
-              ["get", "min_height"],
-            ],
-            "fill-extrusion-opacity": 0.6,
-          },
-        },
-        firstLabelLayerId
-      );
-
-      let scaleFactor = 0; // start small
-      const maxScale = 1;
-      const animationDuration = 2000; // ms
-      const animationStart = Date.now();
-
-      function animate() {
-        const now = Date.now();
-        const elapsed = now - animationStart;
-        scaleFactor = Math.min(elapsed / animationDuration, maxScale);
-        deckOverlay.setProps({
-          layers: [
-            createGeoJsonLayer(scaleFactor, geojson, corpData, currYear),
-          ],
+        /* ------------------------------------------------------------------
+         *  Map initialisation
+         * ----------------------------------------------------------------*/
+        const map = new mapboxgl.Map({
+          container: mapEl,
+          style: "mapbox://styles/autumnartist/cm95dpgq200aw01qu4zs00wkv",
+          center: [-71.057083, 42.361145],
+          zoom: 10,
+          pitch: 45,
+          antialias: true,
+          projection: "mercator",
         });
 
-        if (scaleFactor < maxScale) {
-          requestAnimationFrame(animate);
+        /* ------------------------------------------------------------------
+         *  Lights
+         * ----------------------------------------------------------------*/
+        const ambientLight = new AmbientLight({
+          color: [255, 230, 200],
+          intensity: 1.0,
+        });
+        const pointLight = new PointLight({
+          color: [255, 230, 200],
+          intensity: 0.8,
+          position: [-71.057083, 42.361145, 8000],
+        });
+        const lightingEffect = new LightingEffect({ ambientLight, pointLight });
+
+        /* ------------------------------------------------------------------
+         *  Scales
+         * ----------------------------------------------------------------*/
+        const minRate = 0.0;
+        const maxRate = 0.69;
+
+        const colorScale = d3
+          .scaleLinear()
+          .domain(d3.range(minRate, maxRate, (maxRate - minRate) / 6))
+          .range(["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"])
+          .interpolate(d3.interpolateLab);
+
+        const elevationScale = d3
+          .scaleLinear()
+          .domain([minRate, maxRate])
+          .range([100, 3000]);
+
+        /* ------------------------------------------------------------------
+         *  Data loading
+         * ----------------------------------------------------------------*/
+        async function loadData() {
+          const [csv, json] = await Promise.all([
+            d3.csv("merged_dataset_full.csv"),
+            fetch("boston_neighborhoods.geojson").then((r) => r.json()),
+          ]);
+
+          corpData = csv.reduce((acc, d) => {
+            const hood = d.Neighborhood.trim();
+            acc[hood] = acc[hood] || {};
+            acc[hood][+d.Year] = +d.corp_own_rate;
+            return acc;
+          }, {});
+
+          geojson = json;
         }
-      }
-      animate();
-    }
-  </script>
+
+        /* ------------------------------------------------------------------
+         *  Layer factory
+         * ----------------------------------------------------------------*/
+        function makeLayer({ scale = 1, year }) {
+          return new GeoJsonLayer({
+            id: "boston-3d",
+            data: geojson,
+            pickable: true,
+            extruded: true,
+            wireframe: false,
+            effects: [lightingEffect],
+            coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
+
+            material: {
+              ambient: 0.6,
+              diffuse: 0.8,
+              shininess: 32,
+              specularColor: [60, 60, 60],
+            },
+
+            getElevation: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              const rate = corpData[hood]?.[year];
+              const h = rate != null ? elevationScale(rate) : 100;
+              return h * scale;
+            },
+
+            getFillColor: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              const rate = corpData[hood]?.[year];
+              if (rate == null || isNaN(rate)) return [200, 200, 200, 180];
+              const c = d3.color(colorScale(rate));
+              return [c.r, c.g, c.b, c.opacity * 255];
+            },
+
+            onHover: ({ x, y, object }) => {
+              if (!object) {
+                tooltipEl.style.display = "none";
+                return;
+              }
+
+              const hood =
+                object.properties.blockgr2020_ctr_neighb_name?.trim();
+              const rate = corpData[hood]?.[year];
+              tooltipEl.style.display = "block";
+              tooltipEl.style.left = `${x + 10}px`;
+              tooltipEl.style.top = `${y + 10}px`;
+              tooltipEl.innerHTML = `
+            <strong>${hood}</strong><br/>
+            Year: ${year}<br/>
+            Corporate Ownership: ${
+              rate != null ? (rate * 100).toFixed(1) + "%" : "N/A"
+            }
+          `;
+            },
+
+            updateTriggers: { getElevation: [scale, year], getFillColor: year },
+          });
+        }
+
+        /* ------------------------------------------------------------------
+         *  Rendering helpers
+         * ----------------------------------------------------------------*/
+        function updateYear(y) {
+          console.log("updating year");
+          const year = Math.max(START_YEAR, Math.min(END_YEAR, Math.round(y)));
+          sliderLabel.textContent = year;
+          if (sliderEl.value !== String(year)) sliderEl.value = year;
+
+          deckOverlay.setProps({ layers: [makeLayer({ scale: 1, year })] });
+        }
+
+        function attachEvents() {
+          /* Slider --------------------------------------------------------- */
+          sliderEl.addEventListener("input", () => updateYear(+sliderEl.value));
+
+          /* Parent iframe → child message listener ------------------------ */
+          window.addEventListener("message", (e) => {
+            if (typeof e.data?.year === "number") updateYear(e.data.year);
+          });
+        }
+
+        /* ------------------------------------------------------------------
+         *  Intro animation
+         * ----------------------------------------------------------------*/
+        function runIntroAnimation(year = INITIAL_YEAR) {
+          const duration = 2000;
+          const start = performance.now();
+
+          (function animate() {
+            const t = Math.min((performance.now() - start) / duration, 1);
+            deckOverlay.setProps({ layers: [makeLayer({ scale: t, year })] });
+            if (t < 1) requestAnimationFrame(animate);
+          })();
+        }
+
+        /* ------------------------------------------------------------------
+         *  Bootstrap
+         * ----------------------------------------------------------------*/
+        async function init() {
+          await loadData();
+
+          deckOverlay = new MapboxOverlay({
+            interleaved: true,
+            layers: [makeLayer({ scale: 1, year: INITIAL_YEAR })],
+          });
+          map.addControl(deckOverlay);
+
+          attachEvents();
+          runIntroAnimation(INITIAL_YEAR);
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+      })();
+    </script>
+  </body>
 </html>
