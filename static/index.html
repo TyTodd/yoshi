@@ -65,9 +65,9 @@
       }
 
       /* Legend ------------------------------------------------------------ */
-      #legend {
+      #legend-corp {
         position: absolute;
-        bottom: 2rem;
+        bottom: 1rem;
         right: 2rem;
         background: #fff;
         padding: 10px 15px;
@@ -75,6 +75,18 @@
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         font-size: 12px;
         width: 160px;
+        z-index: 999;
+      }
+      #legend-elevation {
+        position: absolute;
+        bottom: 1rem;
+        right: 15rem;
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+        width: 200px;
         z-index: 999;
       }
       #legend-gradient {
@@ -130,11 +142,51 @@
     <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
     <div id="tooltip"></div>
 
-    <div id="legend">
-      <strong>Ownership Rate</strong>
+    <div id="legend-corp">
+      <strong>Corporate Ownership Rate</strong>
       <div id="legend-gradient"></div>
       <div style="display: flex; justify-content: space-between">
         <span>0%</span><span>69%</span>
+      </div>
+    </div>
+    <div id="legend-elevation">
+      <strong>Median House Price (Elevation)</strong>
+      <div
+        style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px"
+      >
+        <div style="display: flex; align-items: center">
+          <div
+            style="
+              width: 20px;
+              height: 6px;
+              background: #999;
+              margin-right: 8px;
+            "
+          ></div>
+          <span>$200k</span>
+        </div>
+        <div style="display: flex; align-items: center">
+          <div
+            style="
+              width: 40px;
+              height: 6px;
+              background: #999;
+              margin-right: 8px;
+            "
+          ></div>
+          <span>$650k</span>
+        </div>
+        <div style="display: flex; align-items: center">
+          <div
+            style="
+              width: 60px;
+              height: 6px;
+              background: #999;
+              margin-right: 8px;
+            "
+          ></div>
+          <span>$1.3M</span>
+        </div>
       </div>
     </div>
 
@@ -172,7 +224,7 @@
          *  State
          * ----------------------------------------------------------------*/
         let geojson = null;
-        let corpData = null;
+        let data = null;
         let deckOverlay = null;
 
         /* ------------------------------------------------------------------
@@ -181,7 +233,8 @@
         const map = new mapboxgl.Map({
           container: mapEl,
           style: "mapbox://styles/autumnartist/cm95dpgq200aw01qu4zs00wkv",
-          center: [-71.057083, 42.361145],
+          // center: [-71.057083, 42.361145],
+          center: [-71.057083, 42.3],
           zoom: 10,
           pitch: 45,
           antialias: true,
@@ -214,9 +267,15 @@
           .range(["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"])
           .interpolate(d3.interpolateLab);
 
+        // const elevationScale = d3
+        //   .scaleLinear()
+        //   .domain([minRate, maxRate])
+        //   .range([100, 3000]);
+        const minPrice = 200000;
+        const maxPrice = 1300000;
         const elevationScale = d3
           .scaleLinear()
-          .domain([minRate, maxRate])
+          .domain([minPrice, maxPrice]) // min and max home prices
           .range([100, 3000]);
 
         /* ------------------------------------------------------------------
@@ -228,14 +287,23 @@
             fetch("boston_neighborhoods.geojson").then((r) => r.json()),
           ]);
 
-          corpData = csv.reduce((acc, d) => {
+          data = csv.reduce((acc, d) => {
             const hood = d.Neighborhood.trim();
+            const year = +d.Year;
+            const corpRate = parseFloat(d.corp_own_rate);
+            const housePrice = parseFloat(d.Median_House_Price);
+
             acc[hood] = acc[hood] || {};
-            acc[hood][+d.Year] = +d.corp_own_rate;
+            // acc[hood][+d.Year] = +d.corp_own_rate;
+            acc[hood][year] = {
+              corp_own_rate: isNaN(corpRate) ? null : corpRate,
+              median_house_price: isNaN(housePrice) ? null : housePrice,
+            };
             return acc;
           }, {});
 
           geojson = json;
+          console.log(data);
         }
 
         /* ------------------------------------------------------------------
@@ -260,14 +328,17 @@
 
             getElevation: (f) => {
               const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
-              const rate = corpData[hood]?.[year];
-              const h = rate != null ? elevationScale(rate) : 100;
-              return h * scale;
+              // const rate = data[hood]?.[year];
+              // const h = rate != null ? elevationScale(rate) : 100;
+              // return h * scale;
+              const value = data[hood]?.[year]?.median_house_price;
+              return value != null ? elevationScale(value) * scale : 100;
             },
 
             getFillColor: (f) => {
               const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
-              const rate = corpData[hood]?.[year];
+              // const rate = data[hood]?.[year];
+              const rate = data[hood]?.[year]?.corp_own_rate;
               if (rate == null || isNaN(rate)) return [200, 200, 200, 180];
               const c = d3.color(colorScale(rate));
               return [c.r, c.g, c.b, c.opacity * 255];
@@ -281,7 +352,7 @@
 
               const hood =
                 object.properties.blockgr2020_ctr_neighb_name?.trim();
-              const rate = corpData[hood]?.[year];
+              const rate = data[hood]?.[year];
               tooltipEl.style.display = "block";
               tooltipEl.style.left = `${x + 10}px`;
               tooltipEl.style.top = `${y + 10}px`;
@@ -289,7 +360,14 @@
             <strong>${hood}</strong><br/>
             Year: ${year}<br/>
             Corporate Ownership: ${
-              rate != null ? (rate * 100).toFixed(1) + "%" : "N/A"
+              data[hood]?.[year].corp_own_rate != null
+                ? (data[hood][year].corp_own_rate * 100).toFixed(1) + "%"
+                : "N/A"
+            }<br/>
+            Median Home Price: ${
+              data[hood]?.[year].median_house_price != null
+                ? "$" + data[hood][year].median_house_price.toLocaleString()
+                : "N/A"
             }
           `;
             },
@@ -302,12 +380,18 @@
          *  Rendering helpers
          * ----------------------------------------------------------------*/
         function updateYear(y) {
-          console.log("updating year");
+          // console.log("updating year");
           const year = Math.max(START_YEAR, Math.min(END_YEAR, Math.round(y)));
           sliderLabel.textContent = year;
           if (sliderEl.value !== String(year)) sliderEl.value = year;
 
           deckOverlay.setProps({ layers: [makeLayer({ scale: 1, year })] });
+          // console.log("updating year: ", year);
+          // console.log("corp rate: ", data["Allston"][year].corp_own_rate);
+          // console.log(
+          //   "house price: ",
+          //   data["Allston"][year].median_house_price
+          // );
         }
 
         function attachEvents() {

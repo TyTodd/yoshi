@@ -49,73 +49,43 @@
   $: description = `A pie chart showing project counts by year. ${data.map((d) => `${d.label}: ${d.value} projects`).join(", ")}.`;
 </script>
 
-<button
-  on:click={toggleView}
-  aria-pressed={!showChart}
-  aria-label="Toggle between pie chart and table view"
-  class="toggle-button"
->
-  {showChart ? "Show Table" : "Show Chart"}
-</button>
-
-{#if showChart}
-  <div class="container">
-    <svg
-      viewBox="-50 -50 100 100"
-      role="img"
-      aria-labelledby="pie-title pie-desc"
-    >
-      <title id="pie-title">Rates</title>
-      <desc id="pie-desc">{description}</desc>
-      <circle class="pie-outline" r="50" />
-      {#each arcs as arc, index}
-        <path
-          d={arc}
-          fill={colors(index)}
-          class:selected={selectedIndex === index}
-          on:click={(e) => toggleWedge(index, e)}
-          on:keyup={(e) => toggleWedge(index, e)}
-          tabindex="0"
-          role="button"
-        />
-      {/each}
-    </svg>
-    <ul class="legend">
-      <p><strong>Current Year: {year}</strong></p>
-      {#each data as d, index}
-        <li
-          style="--color: {colors(
-            index
-          )}; display: flex; align-items: center; gap: 5px"
-          class:selected={selectedIndex === index}
-        >
-          <span class="swatch"></span>
-          {d.label} <em>({d.value.toFixed(4)})</em>
-        </li>
-      {/each}
-    </ul>
-    <p aria-live="polite" class="sr-only">{liveText}</p>
-  </div>
-{:else}
-  <table aria-label="Table showing project counts by year" class="data-table">
-    <caption>Rates during {year}</caption>
-    <thead>
-      <tr>
-        <th id="year-header" scope="col">Year</th>
-        <th id="projects-header" scope="col">Projects</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data as d, i}
-        <tr>
-          <th id="row-{i}" scope="row">{d.label}</th>
-          <td aria-labelledby="row-{i} projects-header">{d.value.toFixed(4)}</td
-          >
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{/if}
+<div class="container">
+  <svg
+    viewBox="-50 -50 100 100"
+    role="img"
+    aria-labelledby="pie-title pie-desc"
+  >
+    <title id="pie-title">Rates</title>
+    <desc id="pie-desc">{description}</desc>
+    <circle class="pie-outline" r="50" />
+    {#each arcs as arc, index}
+      <path
+        d={arc}
+        fill={colors(index)}
+        class:selected={selectedIndex === index}
+        on:click={(e) => toggleWedge(index, e)}
+        on:keyup={(e) => toggleWedge(index, e)}
+        tabindex="0"
+        role="button"
+      />
+    {/each}
+  </svg>
+  <ul class="legend">
+    <p><strong>Current Year: {year}</strong></p>
+    {#each data as d, index}
+      <li
+        style="--color: {colors(
+          index
+        )}; display: flex; align-items: center; gap: 5px"
+        class:selected={selectedIndex === index}
+      >
+        <span class="swatch"></span>
+        {d.label} <em>({d.value.toFixed(4)})</em>
+      </li>
+    {/each}
+  </ul>
+  <p aria-live="polite" class="sr-only">{liveText}</p>
+</div>
 
 <style>
   .data-table {

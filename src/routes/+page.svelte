@@ -7,6 +7,7 @@
 
   //PIE CHART
   let pieData = [];
+  let geoData = [];
   let pieProgress = 0;
   let selectedYear = 0;
   let selectedIndex = -1;
@@ -30,6 +31,24 @@
             { label: "Owner-Occupied", value: own },
             { label: "Landlord", value: land },
           ],
+        };
+      })
+      .sort((a, b) => +a.year - +b.year);
+
+    geoData = Array.from(
+      d3.group(raw_data, (d) => `${d.Year}-${d.Neighborhood}`).entries()
+    )
+      .map(([key, entries]) => {
+        const year = entries[0].Year;
+        const neighborhood = entries[0].Neighborhood;
+        const corp = d3.mean(entries, (d) => d.corp_own_rate);
+        const house_price = d3.mean(entries, (d) => d.Median_House_Price);
+
+        return {
+          year,
+          neighborhood,
+          corp,
+          house_price,
         };
       })
       .sort((a, b) => +a.year - +b.year);
@@ -96,7 +115,7 @@
           {p.year}: {(p.data[0].value * 100).toFixed(2)} % of was corporate-owned,
           {(p.data[1].value * 100).toFixed(2)} % owner-occupied and {(
             p.data[2].value * 100
-          ).toFixed(2)} % rented by landlords.
+          ).toFixed(2)} % owned by landlords.
         </p>
       {/each}
     </div>
@@ -122,17 +141,16 @@
         src="index.html"
         title="3-D map"
         class="w-full h-full border-0"
-        style="width:125%; height: 75%; border-width:0px"
+        style="width:125%; height: 80%; border-width:0px"
       />
     </svelte:fragment>
 
     <!-- story slot (gives us scroll space) -->
-    {#each pieData as p}
+    {#each geoData as g}
       <p>
-        {p.year}: {(p.data[0].value * 100).toFixed(2)} % of was corporate-owned,
-        {(p.data[1].value * 100).toFixed(2)} % owner-occupied and {(
-          p.data[2].value * 100
-        ).toFixed(2)} % owned by landlords.
+        In {g.year}, <strong>{g.neighborhood}</strong> had {Math.round(
+          g.corp * 100
+        )}% corporate ownership and a median house price of ${g.house_price.toLocaleString()}.
       </p>
     {/each}
   </Scrolly>
