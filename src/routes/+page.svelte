@@ -27,7 +27,8 @@
   let visibleRentData = [];
 
   onMount(async () => {
-    const raw_data = await csv("/merged_dataset_full.csv", d3.autoType);
+    // const raw_data = await csv("/merged_dataset_full.csv", d3.autoType);
+    const raw_data = await csv("merged_dataset_full.csv", d3.autoType);
     const year_groups = d3.group(raw_data, (d) => d.Year);
 
     pieData = Array.from(year_groups.entries())
