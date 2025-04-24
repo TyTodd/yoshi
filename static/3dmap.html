@@ -8,6 +8,8 @@
     <script src="https://unpkg.com/deck.gl@^9.0.0-beta/dist.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
     <link
       rel="stylesheet"
       href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css"
@@ -42,20 +44,50 @@
       }
 
       /* Map container ----------------------------------------------------- */
-      #map-wrapper {
+
+      #map-wrapper,
+      #chart-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      #corp_map,
+      #house_map,
+      #corpChart,
+      #houseChart {
+        width: 100%;
+        height: 40vh;
+      }
+
+      /* #map-wrapper {
         width: 80%;
         margin: 0 auto;
-      }
-      #map,
+      } */
+      /* #map,
       #corp_map,
       #house_map {
         width: 50%;
         height: 40vh;
-      }
+      } */
+
+      /* #chart-wrapper {
+        width: 40vw;
+        margin: none;
+        gap: 40px;
+      } */
+
+      /* #corpChart,
+      #houseChart {
+        width: 50%;
+        height: 40vh;
+      } */
 
       /* Tooltip ----------------------------------------------------------- */
       #tooltip {
-        position: absolute;
+        position: fixed; /* fixed = viewport coords */
+        top: 45%;
+        left: 45%;
         display: none;
         background: rgba(0, 0, 0, 0.8);
         color: #fff;
@@ -138,10 +170,18 @@
       </div>
     </div>
 
-    <!--‑‑ Map ------------------------------------------------------------- -->
-    <div id="map-wrapper">
-      <div id="corp_map"></div>
-      <div id="house_map"></div>
+    <!--‑‑ Visuals ------------------------------------------------------------- -->
+    <div style="display: flex; gap: 2rem; width: 90%; margin: 0 auto">
+      <!--‑‑ Map ------------------------------------------------------------- -->
+      <div id="map-wrapper">
+        <div id="corp_map"></div>
+        <div id="house_map"></div>
+      </div>
+      <!--‑‑ Line graph ------------------------------------------------------------- -->
+      <div id="chart-wrapper">
+        <canvas id="corpChart"></canvas>
+        <canvas id="houseChart"></canvas>
+      </div>
     </div>
 
     <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
@@ -204,6 +244,13 @@
         const START_YEAR = 2004;
         const END_YEAR = 2024;
         const INITIAL_YEAR = 2024;
+        let currentYear = INITIAL_YEAR;
+        let selectedHood = null;
+        const filteredColors = d3.schemeTableau10.filter(
+          (color) => color !== "#4e79a7" && color !== "#e15759"
+        );
+
+        const hoodColor = d3.scaleOrdinal(filteredColors);
 
         const {
           MapboxOverlay,
@@ -240,8 +287,7 @@
         //corporate ownership map:
         const corp_map = new mapboxgl.Map({
           container: mapEl1,
-          style: "mapbox://styles/autumnartist/cm95dpgq200aw01qu4zs00wkv",
-          // center: [-71.057083, 42.361145],
+          style: "mapbox://styles/mapbox/light-v11",
           center: [-71.057083, 42.3],
           maxZoom: 10,
           minZoom: 10,
@@ -253,8 +299,7 @@
 
         const house_map = new mapboxgl.Map({
           container: mapEl2,
-          style: "mapbox://styles/autumnartist/cm95dpgq200aw01qu4zs00wkv",
-          // center: [-71.057083, 42.361145],
+          style: "mapbox://styles/mapbox/light-v11",
           center: [-71.057083, 42.3],
           maxZoom: 10,
           minZoom: 10,
@@ -263,6 +308,33 @@
           antialias: true,
           projection: "mercator",
         });
+
+        let isSyncing = false;
+
+        function syncMaps(mapA, mapB) {
+          mapA.on("move", () => {
+            if (isSyncing) return;
+            isSyncing = true;
+
+            const center = mapA.getCenter();
+            const zoom = mapA.getZoom();
+            const bearing = mapA.getBearing();
+            const pitch = mapA.getPitch();
+
+            mapB.jumpTo({
+              center: center,
+              zoom: zoom,
+              bearing: bearing,
+              pitch: pitch,
+            });
+
+            isSyncing = false;
+          });
+        }
+
+        // Synchronize both ways
+        syncMaps(corp_map, house_map);
+        syncMaps(house_map, corp_map);
 
         /* ------------------------------------------------------------------
          *  Lights
@@ -278,6 +350,9 @@
         });
         const lightingEffect = new LightingEffect({ ambientLight, pointLight });
 
+        //hover highlights
+        let hoveredHood = null;
+        const HIGHLIGHT = [255, 105, 180, 255];
         /* ------------------------------------------------------------------
          *  Scales
          * ----------------------------------------------------------------*/
@@ -287,11 +362,6 @@
         const minRate = 0.0;
         const maxRate = 0.69;
 
-        // const colorScale = d3
-        //   .scaleLinear()
-        //   .domain(d3.range(minRate, maxRate, (maxRate - minRate) / 6))
-        //   .range(["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"])
-        //   .interpolate(d3.interpolateLab);
         const colorScaleCorp = d3
           .scaleLinear()
           .domain(
@@ -316,9 +386,6 @@
           .scaleLinear()
           .domain([minPrice, maxPrice]) // min and max home prices
           .range([100, 3000]);
-        // const colorScale_house = d3
-        //   .scaleSequential(d3.interpolateViridis)
-        //   .domain([minPrice, maxPrice]);
 
         const colorScaleHouse = d3
           .scaleLinear()
@@ -348,7 +415,6 @@
             const housePrice = parseFloat(d.Median_House_Price);
 
             acc[hood] = acc[hood] || {};
-            // acc[hood][+d.Year] = +d.corp_own_rate;
             acc[hood][year] = {
               corp_own_rate: isNaN(corpRate) ? null : corpRate,
               median_house_price: isNaN(housePrice) ? null : housePrice,
@@ -363,7 +429,7 @@
         /* ------------------------------------------------------------------
          *  Layer factory
          * ----------------------------------------------------------------*/
-        function makeCorpLayer({ scale = 1, year }) {
+        function makeCorpLayer({ scale = 1, year, hover }) {
           return new GeoJsonLayer({
             id: "boston-3d-corp",
             data: geojson,
@@ -388,53 +454,27 @@
               const rate = data[hood]?.[year]?.corp_own_rate;
               const h = rate != null ? elevationScale_corp(rate) : 100;
               return h * scale;
-              //elevation for house
-              // const value = data[hood]?.[year]?.median_house_price;
-              // return value != null ? elevationScale_house(value) * scale : 100;
             },
 
             getFillColor: (f) => {
               const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              if (hood === hover) return HIGHLIGHT;
               // const rate_corp = data[hood]?.[year];
               const rate = data[hood]?.[year]?.corp_own_rate;
               if (rate == null || isNaN(rate)) return [200, 200, 200, 180];
               const c = d3.color(colorScaleCorp(rate));
               return [c.r, c.g, c.b, c.opacity * 255];
             },
-
-            onHover: ({ x, y, object }) => {
-              if (!object) {
-                tooltipEl.style.display = "none";
-                return;
-              }
-
-              const hood =
-                object.properties.blockgr2020_ctr_neighb_name?.trim();
-              const rate = data[hood]?.[year];
-              tooltipEl.style.display = "block";
-              tooltipEl.style.left = `${x + 10}px`;
-              tooltipEl.style.top = `${y + 10}px`;
-              tooltipEl.innerHTML = `
-            <strong>${hood}</strong><br/>
-            Year: ${year}<br/>
-            Corporate Ownership: ${
-              data[hood]?.[year].corp_own_rate != null
-                ? (data[hood][year].corp_own_rate * 100).toFixed(1) + "%"
-                : "N/A"
-            }<br/>
-            Median Home Price: ${
-              data[hood]?.[year].median_house_price != null
-                ? "$" + data[hood][year].median_house_price.toLocaleString()
-                : "N/A"
-            }
-          `;
+            onHover: handleHover,
+            onClick: handleClick,
+            updateTriggers: {
+              getElevation: [scale, year],
+              getFillColor: [hover, year],
             },
-
-            updateTriggers: { getElevation: [scale, year], getFillColor: year },
           });
         }
 
-        function makeHouseLayer({ scale = 1, year }) {
+        function makeHouseLayer({ scale = 1, year, hover }) {
           return new GeoJsonLayer({
             id: "boston-3d-house",
             data: geojson,
@@ -461,42 +501,19 @@
             },
 
             getFillColor: (f) => {
-              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim(); // <- missing
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              if (hood === hover) return HIGHLIGHT;
               const value = data[hood]?.[year]?.median_house_price;
               if (value == null || isNaN(value)) return [200, 200, 200, 180];
               const c = d3.color(colorScaleHouse(value));
               return [c.r, c.g, c.b, 255];
             },
-
-            onHover: ({ x, y, object }) => {
-              if (!object) {
-                tooltipEl.style.display = "none";
-                return;
-              }
-
-              const hood =
-                object.properties.blockgr2020_ctr_neighb_name?.trim();
-              const rate = data[hood]?.[year];
-              tooltipEl.style.display = "block";
-              tooltipEl.style.left = `${x + 10}px`;
-              tooltipEl.style.top = `${y + 10}px`;
-              tooltipEl.innerHTML = `
-            <strong>${hood}</strong><br/>
-            Year: ${year}<br/>
-            Corporate Ownership: ${
-              data[hood]?.[year].corp_own_rate != null
-                ? (data[hood][year].corp_own_rate * 100).toFixed(1) + "%"
-                : "N/A"
-            }<br/>
-            Median Home Price: ${
-              data[hood]?.[year].median_house_price != null
-                ? "$" + data[hood][year].median_house_price.toLocaleString()
-                : "N/A"
-            }
-          `;
+            onHover: handleHover,
+            onClick: handleClick,
+            updateTriggers: {
+              getElevation: [scale, year],
+              getFillColor: [hover, year],
             },
-
-            updateTriggers: { getElevation: [scale, year], getFillColor: year },
           });
         }
 
@@ -504,10 +521,14 @@
          *  Rendering helpers
          * ----------------------------------------------------------------*/
         function updateYear(y) {
-          // console.log("updating year");
+          console.log("updating year");
           const year = Math.max(START_YEAR, Math.min(END_YEAR, Math.round(y)));
           sliderLabel.textContent = year;
           if (sliderEl.value !== String(year)) sliderEl.value = year;
+
+          currentYear = year;
+          aggregated = aggregateByYear(data, 2004, currentYear);
+          drawCharts(aggregated);
 
           deckOverlay_corp.setProps({
             layers: [makeCorpLayer({ scale: 1, year })],
@@ -515,12 +536,6 @@
           deckOverlay_house.setProps({
             layers: [makeHouseLayer({ scale: 1, year })],
           });
-          // console.log("updating year: ", year);
-          // console.log("corp rate: ", data["Allston"][year].corp_own_rate);
-          // console.log(
-          //   "house price: ",
-          //   data["Allston"][year].median_house_price
-          // );
         }
 
         function attachEvents() {
@@ -533,30 +548,239 @@
           });
         }
 
-        /* ------------------------------------------------------------------
-         *  Intro animation
-         * ----------------------------------------------------------------*/
-        // function runIntroAnimation(year = INITIAL_YEAR) {
-        //   const duration = 2000;
-        //   const start = performance.now();
+        function handleHover({ object }) {
+          // name under cursor OR null when the pointer leaves any polygon
+          const hood = object
+            ? object.properties.blockgr2020_ctr_neighb_name?.trim()
+            : null;
 
-        //   (function animate() {
-        //     const t = Math.min((performance.now() - start) / duration, 1);
-        //     deckOverlay_corp.setProps({
-        //       layers: [makeCorpLayer({ scale: t, year })],
-        //     });
-        //     deckOverlay_house.setProps({
-        //       layers: [makeHouseLayer({ scale: t, year })],
-        //     });
-        //     if (t < 1) requestAnimationFrame(animate);
-        //   })();
-        // }
+          /* --- TOOLTIP ------------------------------------------------------- */
+          if (!hood) {
+            tooltipEl.style.display = "none"; // hide when nothing is picked
+          } else {
+            const year = currentYear;
+            const corp = data[hood]?.[year]?.corp_own_rate;
+            const price = data[hood]?.[year]?.median_house_price;
+            const showPrice =
+              year === 2023 || year === 2024
+                ? "N/A"
+                : price != null
+                ? "$" + price.toLocaleString()
+                : "N/A";
+
+            tooltipEl.innerHTML = `
+              <strong>${hood}</strong><br/>
+              Year: ${year}<br/>
+              Corporate Ownership: ${
+                corp != null ? (corp * 100).toFixed(1) + "%" : "N/A"
+              }<br/>
+              Median Home Price: ${showPrice}
+            `;
+            tooltipEl.style.display = "block";
+          }
+
+          // highlight
+          if (hood === hoveredHood) return; // nothing changed
+
+          hoveredHood = hood; // update global
+
+          // rebuild both layers with the new "hover" value
+          deckOverlay_corp.setProps({
+            layers: [
+              makeCorpLayer({
+                scale: 1,
+                year: currentYear,
+                hover: hoveredHood,
+              }),
+            ],
+          });
+          deckOverlay_house.setProps({
+            layers: [
+              makeHouseLayer({
+                scale: 1,
+                year: currentYear,
+                hover: hoveredHood,
+              }),
+            ],
+          });
+        }
+        function handleClick({ object }) {
+          if (!object) return;
+          const hood = object.properties.blockgr2020_ctr_neighb_name?.trim();
+          const rows = aggregateByYear(data, START_YEAR, END_YEAR);
+          console.log("clicked: ", hood);
+
+          if (hood === selectedHood) {
+            // clicked the same hood → hide it
+            hideHood();
+            selectedHood = null;
+          } else {
+            // new hood → replace / add
+            if (selectedHood) hideHood(); // remove old one first
+            showHood(hood, rows);
+            selectedHood = hood;
+          }
+          corpChart.update();
+          houseChart.update();
+        }
+
+        function aggregateByYear(data, startYear, endYear) {
+          const results = [];
+
+          for (let year = startYear; year <= endYear; year++) {
+            let corpSum = 0,
+              priceSum = 0,
+              count = 0;
+
+            for (const hood in data) {
+              const entry = data[hood]?.[year];
+              if (entry) {
+                if (typeof entry.corp_own_rate === "number")
+                  corpSum += entry.corp_own_rate;
+                if (typeof entry.median_house_price === "number")
+                  priceSum += entry.median_house_price;
+                count++;
+              }
+            }
+
+            results.push({
+              year,
+              avgCorpOwnRate: count ? corpSum / count : null,
+              avgHomePrice: count ? priceSum / count : null,
+            });
+          }
+          console.log(results);
+
+          return results;
+        }
+
+        let corpChart, houseChart;
+
+        function drawCharts(rows) {
+          const years = rows.map((r) => r.year);
+          const corpData = rows.map((r) => r.avgCorpOwnRate);
+          const priceData = rows.map((r) => r.avgHomePrice);
+
+          /* first time? create charts ------------ */
+          if (!corpChart) {
+            const corpCtx = document
+              .getElementById("corpChart")
+              .getContext("2d");
+            const houseCtx = document
+              .getElementById("houseChart")
+              .getContext("2d");
+
+            corpChart = new Chart(corpCtx, {
+              type: "line",
+              data: {
+                labels: years,
+                datasets: [
+                  {
+                    label: "Avg corporate-ownership rate",
+                    data: corpData,
+                    borderColor: "#4593b6",
+                    backgroundColor: "rgba(69,147,182,0.15)",
+                    fill: true,
+                    lineTension: 0,
+                  },
+                  {},
+                ],
+              },
+              options: {
+                scales: {
+                  yAxes: [
+                    { ticks: { callback: (v) => (v * 100).toFixed(0) + "%" } },
+                  ],
+                },
+              },
+            });
+
+            houseChart = new Chart(houseCtx, {
+              type: "line",
+              data: {
+                labels: years,
+                datasets: [
+                  {
+                    label: "Avg median house price",
+                    data: priceData,
+                    borderColor: "#c3424f",
+                    backgroundColor: "rgba(195,66,79,0.15)",
+                    fill: true,
+                    lineTension: 0,
+                  },
+                  {},
+                ],
+              },
+              options: {
+                scales: {
+                  yAxes: [
+                    { ticks: { callback: (v) => "$" + v.toLocaleString() } },
+                  ],
+                },
+              },
+            });
+          } else {
+            /* subsequent calls → update data ------- */
+            corpChart.data.labels = years;
+            corpChart.data.datasets[0].data = corpData;
+            houseChart.data.labels = years;
+            houseChart.data.datasets[0].data = priceData;
+
+            /* if a hood is selected, refresh its data as well */
+            if (selectedHood) {
+              const s = seriesFor(selectedHood, rows);
+              corpChart.data.datasets[1].data = s.corp;
+              houseChart.data.datasets[1].data = s.price;
+            }
+
+            corpChart.update();
+            houseChart.update();
+          }
+        }
+        function seriesFor(hood, rows) {
+          return {
+            corp: rows.map((r) => data[hood]?.[r.year]?.corp_own_rate ?? null),
+            price: rows.map(
+              (r) => data[hood]?.[r.year]?.median_house_price ?? null
+            ),
+          };
+        }
+
+        function showHood(hood, rows) {
+          const colour = hoodColor(hood);
+          const s = seriesFor(hood, rows);
+
+          corpChart.data.datasets[1] = {
+            // slot 1: hood line
+            label: hood + " corp-rate",
+            data: s.corp,
+            borderColor: colour,
+            backgroundColor: "rgba(0,0,0,0)",
+            lineTension: 0,
+          };
+          houseChart.data.datasets[1] = {
+            // slot 1: hood line
+            label: hood + " median price",
+            data: s.price,
+            borderColor: colour,
+            backgroundColor: "rgba(0,0,0,0)",
+            lineTension: 0,
+          };
+        }
+
+        function hideHood() {
+          corpChart.data.datasets.splice(1, 1);
+          houseChart.data.datasets.splice(1, 1);
+        }
 
         /* ------------------------------------------------------------------
          *  Bootstrap
          * ----------------------------------------------------------------*/
         async function init() {
           await loadData();
+
+          const aggregated = aggregateByYear(data, START_YEAR, END_YEAR);
+          drawCharts(aggregated);
 
           deckOverlay_corp = new MapboxOverlay({
             interleaved: true,
@@ -570,7 +794,6 @@
           house_map.addControl(deckOverlay_house);
 
           attachEvents();
-          // runIntroAnimation(INITIAL_YEAR);
         }
 
         document.addEventListener("DOMContentLoaded", init);
