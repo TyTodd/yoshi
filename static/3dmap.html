@@ -46,9 +46,11 @@
         width: 80%;
         margin: 0 auto;
       }
-      #map {
-        width: 100%;
-        height: 75vh;
+      #map,
+      #corp_map,
+      #house_map {
+        width: 50%;
+        height: 40vh;
       }
 
       /* Tooltip ----------------------------------------------------------- */
@@ -108,7 +110,7 @@
   <body>
     <!--‑‑ Header with slider --------------------------------------------- -->
     <div id="header">
-      <h2>Corporate Ownership Rates in Boston Neighborhoods</h2>
+      <h2>need title</h2>
 
       <div id="filter">
         <label for="year-slider">
@@ -137,12 +139,15 @@
     </div>
 
     <!--‑‑ Map ------------------------------------------------------------- -->
-    <div id="map-wrapper"><div id="map"></div></div>
+    <div id="map-wrapper">
+      <div id="corp_map"></div>
+      <div id="house_map"></div>
+    </div>
 
     <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
     <div id="tooltip"></div>
 
-    <div id="legend-corp">
+    <!-- <div id="legend-corp">
       <strong>Corporate Ownership Rate</strong>
       <div id="legend-gradient"></div>
       <div style="display: flex; justify-content: space-between">
@@ -188,7 +193,7 @@
           <span>$1.3M</span>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!--‑‑ Application script --------------------------------------------- -->
     <script>
@@ -215,7 +220,8 @@
         /* ------------------------------------------------------------------
          *  DOM references
          * ----------------------------------------------------------------*/
-        const mapEl = document.getElementById("map");
+        const mapEl1 = document.getElementById("corp_map");
+        const mapEl2 = document.getElementById("house_map");
         const sliderEl = document.getElementById("year-slider");
         const sliderLabel = document.getElementById("year-value");
         const tooltipEl = document.getElementById("tooltip");
@@ -225,16 +231,33 @@
          * ----------------------------------------------------------------*/
         let geojson = null;
         let data = null;
-        let deckOverlay = null;
+        let deckOverlay_corp = null;
+        let deckOverlay_house = null;
 
         /* ------------------------------------------------------------------
          *  Map initialisation
          * ----------------------------------------------------------------*/
-        const map = new mapboxgl.Map({
-          container: mapEl,
+        //corporate ownership map:
+        const corp_map = new mapboxgl.Map({
+          container: mapEl1,
           style: "mapbox://styles/autumnartist/cm95dpgq200aw01qu4zs00wkv",
           // center: [-71.057083, 42.361145],
           center: [-71.057083, 42.3],
+          maxZoom: 10,
+          minZoom: 10,
+          zoom: 10,
+          pitch: 45,
+          antialias: true,
+          projection: "mercator",
+        });
+
+        const house_map = new mapboxgl.Map({
+          container: mapEl2,
+          style: "mapbox://styles/autumnartist/cm95dpgq200aw01qu4zs00wkv",
+          // center: [-71.057083, 42.361145],
+          center: [-71.057083, 42.3],
+          maxZoom: 10,
+          minZoom: 10,
           zoom: 10,
           pitch: 45,
           antialias: true,
@@ -258,25 +281,56 @@
         /* ------------------------------------------------------------------
          *  Scales
          * ----------------------------------------------------------------*/
+        /* --- Colour ramp (blue ▸ turquoise ▸ orange ▸ red) --- */
+        const COLOR_RAMP = ["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"];
+        //Corporate scales
         const minRate = 0.0;
         const maxRate = 0.69;
 
-        const colorScale = d3
+        // const colorScale = d3
+        //   .scaleLinear()
+        //   .domain(d3.range(minRate, maxRate, (maxRate - minRate) / 6))
+        //   .range(["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"])
+        //   .interpolate(d3.interpolateLab);
+        const colorScaleCorp = d3
           .scaleLinear()
-          .domain(d3.range(minRate, maxRate, (maxRate - minRate) / 6))
-          .range(["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"])
+          .domain(
+            d3.range(
+              minRate,
+              maxRate,
+              (maxRate - minRate) / (COLOR_RAMP.length - 1)
+            )
+          )
+          .range(COLOR_RAMP)
           .interpolate(d3.interpolateLab);
 
-        // const elevationScale = d3
-        //   .scaleLinear()
-        //   .domain([minRate, maxRate])
-        //   .range([100, 3000]);
+        const elevationScale_corp = d3
+          .scaleLinear()
+          .domain([minRate, maxRate])
+          .range([100, 3000]);
+
+        // House price scales
         const minPrice = 200000;
         const maxPrice = 1300000;
-        const elevationScale = d3
+        const elevationScale_house = d3
           .scaleLinear()
           .domain([minPrice, maxPrice]) // min and max home prices
           .range([100, 3000]);
+        // const colorScale_house = d3
+        //   .scaleSequential(d3.interpolateViridis)
+        //   .domain([minPrice, maxPrice]);
+
+        const colorScaleHouse = d3
+          .scaleLinear()
+          .domain(
+            d3.range(
+              minPrice,
+              maxPrice,
+              (maxPrice - minPrice) / (COLOR_RAMP.length - 1)
+            )
+          )
+          .range(COLOR_RAMP)
+          .interpolate(d3.interpolateLab);
 
         /* ------------------------------------------------------------------
          *  Data loading
@@ -309,13 +363,16 @@
         /* ------------------------------------------------------------------
          *  Layer factory
          * ----------------------------------------------------------------*/
-        function makeLayer({ scale = 1, year }) {
+        function makeCorpLayer({ scale = 1, year }) {
           return new GeoJsonLayer({
-            id: "boston-3d",
+            id: "boston-3d-corp",
             data: geojson,
             pickable: true,
             extruded: true,
-            wireframe: false,
+            wireframe: true,
+            stroked: true,
+            lineWidthMinPixels: 1,
+            getLineColor: [0, 0, 0, 180],
             effects: [lightingEffect],
             coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
 
@@ -328,20 +385,87 @@
 
             getElevation: (f) => {
               const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
-              // const rate = data[hood]?.[year];
-              // const h = rate != null ? elevationScale(rate) : 100;
-              // return h * scale;
-              const value = data[hood]?.[year]?.median_house_price;
-              return value != null ? elevationScale(value) * scale : 100;
+              const rate = data[hood]?.[year]?.corp_own_rate;
+              const h = rate != null ? elevationScale_corp(rate) : 100;
+              return h * scale;
+              //elevation for house
+              // const value = data[hood]?.[year]?.median_house_price;
+              // return value != null ? elevationScale_house(value) * scale : 100;
             },
 
             getFillColor: (f) => {
               const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
-              // const rate = data[hood]?.[year];
+              // const rate_corp = data[hood]?.[year];
               const rate = data[hood]?.[year]?.corp_own_rate;
               if (rate == null || isNaN(rate)) return [200, 200, 200, 180];
-              const c = d3.color(colorScale(rate));
+              const c = d3.color(colorScaleCorp(rate));
               return [c.r, c.g, c.b, c.opacity * 255];
+            },
+
+            onHover: ({ x, y, object }) => {
+              if (!object) {
+                tooltipEl.style.display = "none";
+                return;
+              }
+
+              const hood =
+                object.properties.blockgr2020_ctr_neighb_name?.trim();
+              const rate = data[hood]?.[year];
+              tooltipEl.style.display = "block";
+              tooltipEl.style.left = `${x + 10}px`;
+              tooltipEl.style.top = `${y + 10}px`;
+              tooltipEl.innerHTML = `
+            <strong>${hood}</strong><br/>
+            Year: ${year}<br/>
+            Corporate Ownership: ${
+              data[hood]?.[year].corp_own_rate != null
+                ? (data[hood][year].corp_own_rate * 100).toFixed(1) + "%"
+                : "N/A"
+            }<br/>
+            Median Home Price: ${
+              data[hood]?.[year].median_house_price != null
+                ? "$" + data[hood][year].median_house_price.toLocaleString()
+                : "N/A"
+            }
+          `;
+            },
+
+            updateTriggers: { getElevation: [scale, year], getFillColor: year },
+          });
+        }
+
+        function makeHouseLayer({ scale = 1, year }) {
+          return new GeoJsonLayer({
+            id: "boston-3d-house",
+            data: geojson,
+            pickable: true,
+            extruded: true,
+            wireframe: true,
+            stroked: true,
+            lineWidthMinPixels: 1,
+            getLineColor: [0, 0, 0, 180],
+            effects: [lightingEffect],
+            coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
+
+            material: {
+              ambient: 0.6,
+              diffuse: 0.8,
+              shininess: 32,
+              specularColor: [60, 60, 60],
+            },
+
+            getElevation: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              const value = data[hood]?.[year]?.median_house_price;
+              return value != null ? elevationScale_house(value) * scale : 100;
+            },
+
+            getFillColor: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim(); // <- missing
+              const value = data[hood]?.[year]?.median_house_price;
+              if (value == null || isNaN(value)) return [200, 200, 200, 180];
+              const c = d3.color(colorScaleHouse(value));
+              return [c.r, c.g, c.b, 255];
             },
 
             onHover: ({ x, y, object }) => {
@@ -385,7 +509,12 @@
           sliderLabel.textContent = year;
           if (sliderEl.value !== String(year)) sliderEl.value = year;
 
-          deckOverlay.setProps({ layers: [makeLayer({ scale: 1, year })] });
+          deckOverlay_corp.setProps({
+            layers: [makeCorpLayer({ scale: 1, year })],
+          });
+          deckOverlay_house.setProps({
+            layers: [makeHouseLayer({ scale: 1, year })],
+          });
           // console.log("updating year: ", year);
           // console.log("corp rate: ", data["Allston"][year].corp_own_rate);
           // console.log(
@@ -407,16 +536,21 @@
         /* ------------------------------------------------------------------
          *  Intro animation
          * ----------------------------------------------------------------*/
-        function runIntroAnimation(year = INITIAL_YEAR) {
-          const duration = 2000;
-          const start = performance.now();
+        // function runIntroAnimation(year = INITIAL_YEAR) {
+        //   const duration = 2000;
+        //   const start = performance.now();
 
-          (function animate() {
-            const t = Math.min((performance.now() - start) / duration, 1);
-            deckOverlay.setProps({ layers: [makeLayer({ scale: t, year })] });
-            if (t < 1) requestAnimationFrame(animate);
-          })();
-        }
+        //   (function animate() {
+        //     const t = Math.min((performance.now() - start) / duration, 1);
+        //     deckOverlay_corp.setProps({
+        //       layers: [makeCorpLayer({ scale: t, year })],
+        //     });
+        //     deckOverlay_house.setProps({
+        //       layers: [makeHouseLayer({ scale: t, year })],
+        //     });
+        //     if (t < 1) requestAnimationFrame(animate);
+        //   })();
+        // }
 
         /* ------------------------------------------------------------------
          *  Bootstrap
@@ -424,14 +558,19 @@
         async function init() {
           await loadData();
 
-          deckOverlay = new MapboxOverlay({
+          deckOverlay_corp = new MapboxOverlay({
             interleaved: true,
-            layers: [makeLayer({ scale: 1, year: INITIAL_YEAR })],
+            layers: [makeCorpLayer({ scale: 1, year: INITIAL_YEAR })],
           });
-          map.addControl(deckOverlay);
+          deckOverlay_house = new MapboxOverlay({
+            interleaved: true,
+            layers: [makeHouseLayer({ scale: 1, year: INITIAL_YEAR })],
+          });
+          corp_map.addControl(deckOverlay_corp);
+          house_map.addControl(deckOverlay_house);
 
           attachEvents();
-          runIntroAnimation(INITIAL_YEAR);
+          // runIntroAnimation(INITIAL_YEAR);
         }
 
         document.addEventListener("DOMContentLoaded", init);

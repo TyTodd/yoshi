@@ -132,27 +132,28 @@
   </Scrolly>
 
   <h1>Corporate ownership & Housing Prices</h1>
-  <Scrolly bind:progress={mapProgress}>
+  <Scrolly bind:progress={mapProgress} --scrolly-layout="overlap">
     <!-- viz slot -->
     <svelte:fragment slot="viz">
       <iframe
         bind:this={frame}
         on:load={handleLoad}
-        src="index.html"
+        src="3dmap.html"
         title="3-D map"
         class="w-full h-full border-0"
-        style="width:125%; height: 80%; border-width:0px"
+        style="width:100%; height: 80%; border-width:0px"
       />
     </svelte:fragment>
+    <div style="height: 300vh" />
 
     <!-- story slot (gives us scroll space) -->
-    {#each geoData as g}
+    <!-- {#each geoData as g}
       <p>
         In {g.year}, <strong>{g.neighborhood}</strong> had {Math.round(
           g.corp * 100
         )}% corporate ownership and a median house price of ${g.house_price.toLocaleString()}.
       </p>
-    {/each}
+    {/each} -->
   </Scrolly>
 </body>
 
