@@ -1,9 +1,11 @@
 <script>
   import { onMount } from "svelte";
   import Pie from "$lib/Pie.svelte";
+  import House from "$lib/House.svelte";
   import * as d3 from "d3";
   import { csv } from "d3";
   import Scrolly from "svelte-scrolly";
+  import rentData from "$lib/boston_rent_estimates.json";
 
   //PIE CHART
   let pieData = [];
@@ -12,10 +14,20 @@
   let selectedYear = 0;
   let selectedIndex = -1;
   const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
-  // const PIE_SLOW = 0.95;
+
+  // RENT CHART
+  const rent_data = rentData.map((d) => ({
+    year: +d.Year,
+    rent: +d.Estimated_Rent_USD,
+    change: +d.YoYc,
+    index: +d.CPI_Index,
+  }));
+  let rentProgress = 0;
+  let rentYearIndex = -1;
+  let visibleRentData = [];
 
   onMount(async () => {
-    const raw_data = await csv("merged_dataset_full.csv", d3.autoType);
+    const raw_data = await csv("/merged_dataset_full.csv", d3.autoType);
     const year_groups = d3.group(raw_data, (d) => d.Year);
 
     pieData = Array.from(year_groups.entries())
@@ -34,7 +46,8 @@
         };
       })
       .sort((a, b) => +a.year - +b.year);
-    console.log(pieData);
+    // console.log("pie data");
+    // console.log(pieData);
 
     geoData = Array.from(
       d3.group(raw_data, (d) => `${d.Year}-${d.Neighborhood}`).entries()
@@ -54,23 +67,35 @@
       })
       .sort((a, b) => +a.year - +b.year);
   });
+
   $: if (pieData.length) {
-    console.log(pieData[0].year);
+    // console.log(pieData[0].year);
     const step = 100 / pieData.length; // % each year occupies
-    // selectedYear = Math.min(pieData.length - 1, Math.floor(pieProgress / step));
     selectedYear = Math.max(
       0,
       Math.min(pieData.length - 1, Math.floor(pieProgress / step))
     );
-    console.log("step: ", step);
-    console.log("length: ", pieData.length - 1);
-    console.log("other: ", Math.floor(pieProgress / step));
+    // console.log("step: ", step);
+    // console.log("length: ", pieData.length - 1);
+    // console.log("other: ", Math.floor(pieProgress / step));
   }
-  // $: if (pieData.length) {
-  //   const step = 100 / pieData.length; // % each slice occupies
-  //   const progress = Math.min(pieProgress * PIE_SLOW, 100); // slow it down
-  //   selectedYear = Math.min(pieData.length - 1, Math.floor(progress / step));
-  // }
+  $: if (rent_data.length) {
+    const step = 100 / rent_data.length;
+    // const rentYearIndex = Math.min(
+    //   rent_data.length,
+    //   Math.floor(rentProgress / step)
+    // );
+    rentYearIndex = Math.max(
+      0,
+      Math.min(rent_data.length - 1, Math.floor(rentProgress / step))
+    );
+    console.log("rent data: ");
+    console.log(rentData);
+
+    visibleRentData = rent_data.slice(0, rentYearIndex + 1);
+    console.log("visible data at ", rentYearIndex);
+    console.log(visibleRentData);
+  }
 
   /* ----------------------- 3-D MAP (parent / iframe driver) ----------------------- */
   const MIN = 2004;
@@ -99,6 +124,8 @@
     const win = e.target.contentWindow;
     if (win) win.postMessage({ year: mapYear }, "*");
   }
+
+  // console.log(rentData[0]);
 </script>
 
 <svelte:head>
@@ -155,6 +182,20 @@
         )}% corporate ownership and a median house price of ${g.house_price.toLocaleString()}.
       </p>
     {/each} -->
+  </Scrolly>
+
+  <h1>Boston Rent change over time</h1>
+  <!-- <House data={[rent_data[15]]} /> -->
+  <Scrolly bind:progress={rentProgress} --scrolly-layout="overlap">
+    <svelte:fragment slot="viz">
+      <House data={visibleRentData} />
+    </svelte:fragment>
+    <div style="height: 300vh" />
+    <!-- <div style="height: 300vh;">
+      {#each rent_data as d}
+        <p>{d.year}: Rent ${d.rent}</p>
+      {/each}
+    </div> -->
   </Scrolly>
 </body>
 

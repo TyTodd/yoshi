@@ -1,0 +1,128 @@
+[
+  {
+    "Year": 2004,
+    "CPI_Index": 272.75,
+    "YoYc": null,
+    "Estimated_Rent_USD": 2178.4036066704
+  },
+  {
+    "Year": 2005,
+    "CPI_Index": 275.225,
+    "YoYc": 0.9074243813,
+    "Estimated_Rent_USD": 2198.1709721205
+  },
+  {
+    "Year": 2006,
+    "CPI_Index": 281.05,
+    "YoYc": 2.1164501771,
+    "Estimated_Rent_USD": 2244.6941655535
+  },
+  {
+    "Year": 2007,
+    "CPI_Index": 286.236,
+    "YoYc": 1.8452232699,
+    "Estimated_Rent_USD": 2286.1137846339
+  },
+  {
+    "Year": 2008,
+    "CPI_Index": 283.117,
+    "YoYc": -1.0896602803,
+    "Estimated_Rent_USD": 2261.2029107597
+  },
+  {
+    "Year": 2009,
+    "CPI_Index": 290.252,
+    "YoYc": 2.52015951,
+    "Estimated_Rent_USD": 2318.1888309562
+  },
+  {
+    "Year": 2010,
+    "CPI_Index": 290.316,
+    "YoYc": 0.022049805,
+    "Estimated_Rent_USD": 2318.6999870729
+  },
+  {
+    "Year": 2011,
+    "CPI_Index": 290.85,
+    "YoYc": 0.1839375026,
+    "Estimated_Rent_USD": 2322.9649459215
+  },
+  {
+    "Year": 2012,
+    "CPI_Index": 296.673,
+    "YoYc": 2.002062919,
+    "Estimated_Rent_USD": 2369.4721657259
+  },
+  {
+    "Year": 2013,
+    "CPI_Index": 301.61,
+    "YoYc": 1.6641217772,
+    "Estimated_Rent_USD": 2408.9030680398
+  },
+  {
+    "Year": 2014,
+    "CPI_Index": 311.032,
+    "YoYc": 3.1239017274,
+    "Estimated_Rent_USD": 2484.1548325936
+  },
+  {
+    "Year": 2015,
+    "CPI_Index": 323.226,
+    "YoYc": 3.9204969264,
+    "Estimated_Rent_USD": 2581.5460464515
+  },
+  {
+    "Year": 2016,
+    "CPI_Index": 333.655,
+    "YoYc": 3.2265349941,
+    "Estimated_Rent_USD": 2664.8405330288
+  },
+  {
+    "Year": 2017,
+    "CPI_Index": 342.138,
+    "YoYc": 2.5424465391,
+    "Estimated_Rent_USD": 2732.5926789331
+  },
+  {
+    "Year": 2018,
+    "CPI_Index": 356.986,
+    "YoYc": 4.3397693328,
+    "Estimated_Rent_USD": 2851.1808980049
+  },
+  {
+    "Year": 2019,
+    "CPI_Index": 370.402,
+    "YoYc": 3.7581305709,
+    "Estimated_Rent_USD": 2958.3319989658
+  },
+  {
+    "Year": 2020,
+    "CPI_Index": 383.484,
+    "YoYc": 3.531838381,
+    "Estimated_Rent_USD": 3062.8155039428
+  },
+  {
+    "Year": 2021,
+    "CPI_Index": 391.885,
+    "YoYc": 2.1907041754,
+    "Estimated_Rent_USD": 3129.9127310725
+  },
+  {
+    "Year": 2022,
+    "CPI_Index": 409.481,
+    "YoYc": 4.4900927568,
+    "Estimated_Rent_USD": 3270.4487159047
+  },
+  {
+    "Year": 2023,
+    "CPI_Index": 437.013,
+    "YoYc": 6.7236330868,
+    "Estimated_Rent_USD": 3490.3416878528
+  },
+  {
+    "Year": 2024,
+    "CPI_Index": 464.14,
+    "YoYc": 6.2073668289,
+    "Estimated_Rent_USD": 3707.0
+  }
+]
