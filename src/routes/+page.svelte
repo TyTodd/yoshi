@@ -15,7 +15,7 @@
   // const PIE_SLOW = 0.95;
 
   onMount(async () => {
-    const raw_data = await csv("/merged_dataset_full.csv", d3.autoType);
+    const raw_data = await csv("merged_dataset_full.csv", d3.autoType);
     const year_groups = d3.group(raw_data, (d) => d.Year);
 
     pieData = Array.from(year_groups.entries())
@@ -34,6 +34,7 @@
         };
       })
       .sort((a, b) => +a.year - +b.year);
+    console.log(pieData);
 
     geoData = Array.from(
       d3.group(raw_data, (d) => `${d.Year}-${d.Neighborhood}`).entries()
