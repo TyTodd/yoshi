@@ -88,30 +88,6 @@
 </div>
 
 <style>
-  .data-table {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    border-collapse: collapse;
-    width: 100%;
-    max-width: 30em;
-  }
-
-  .data-table caption {
-    font-weight: bold;
-    margin-bottom: 0.5em;
-    text-align: left;
-  }
-
-  .data-table th,
-  .data-table td {
-    border: 1px solid #ccc;
-    padding: 0.5em;
-    text-align: left;
-  }
-
-  .data-table th {
-    background-color: #f0f0f0;
-  }
   .pie-outline {
     stroke: black;
     fill: none;

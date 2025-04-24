@@ -423,7 +423,7 @@
           }, {});
 
           geojson = json;
-          console.log(data);
+          // console.log(data);
         }
 
         /* ------------------------------------------------------------------
@@ -521,7 +521,7 @@
          *  Rendering helpers
          * ----------------------------------------------------------------*/
         function updateYear(y) {
-          console.log("updating year");
+          // console.log("updating year");
           const year = Math.max(START_YEAR, Math.min(END_YEAR, Math.round(y)));
           sliderLabel.textContent = year;
           if (sliderEl.value !== String(year)) sliderEl.value = year;
@@ -608,7 +608,7 @@
           if (!object) return;
           const hood = object.properties.blockgr2020_ctr_neighb_name?.trim();
           const rows = aggregateByYear(data, START_YEAR, END_YEAR);
-          console.log("clicked: ", hood);
+          // console.log("clicked: ", hood);
 
           if (hood === selectedHood) {
             // clicked the same hood → hide it
@@ -649,7 +649,7 @@
               avgHomePrice: count ? priceSum / count : null,
             });
           }
-          console.log(results);
+          // console.log(results);
 
           return results;
         }
