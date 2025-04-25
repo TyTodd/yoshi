@@ -102,21 +102,6 @@
             out:fly={{ x: 200, duration: 600, easing: cubicOut }}
           />
         </g>
-        <!-- <g animate:flip>
-          <image
-            href={selectHouseImage(d.rent)}
-            x={xScale(d.year)}
-            y={yScale(d.rent)}
-            width={Math.min(Math.max(xScale.bandwidth(), 60), 180)}
-            height={innerHeight - yScale(d.rent)}
-            preserveAspectRatio="none"
-            in:fly={{ x: 200, duration: 600, easing: cubicOut }}
-            out:fly={{ x: 200, duration: 600, easing: cubicOut }}
-            on:mouseover={(e) => handleMouseOver(e, d)}
-            on:mouseout={handleMouseOut}
-            style="cursor: pointer;"
-          />
-        </g> -->
       {/each}
     </g>
   </svg>
