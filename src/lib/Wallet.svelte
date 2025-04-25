@@ -5,7 +5,7 @@
   const slant = -41;
   const barWidth = 106;
   let svg;
-  let selectedYear = 2021; // single selected year filter
+  export let selectedYear = 2021; // single selected year filter
   let mergedData = [];
   $: filteredData = mergedData.filter((d) => d.year === selectedYear); // reactive filtered data
 
@@ -251,8 +251,8 @@
   </div>
 </div>
 
-<input type="range" min="2005" max="2021" bind:value={selectedYear} step="1" />
-Selected Year: {selectedYear}
+<!-- <input type="range" min="2005" max="2021" bind:value={selectedYear} step="1" />
+Selected Year: {selectedYear} -->
 
 <style>
   .layout-container {
