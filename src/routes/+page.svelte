@@ -6,14 +6,21 @@
   import { csv } from "d3";
   import Scrolly from "svelte-scrolly";
   import rentData from "$lib/boston_rent_estimates.json";
-
+  import Wallet from "$lib/Wallet.svelte";
   // PIE CHART
   let pieData = [];
   let geoData = []; // LINE GRAPH
   let pieProgress = 0;
   let selectedYear = 0;
   let selectedIndex = -1;
+  let walletProgress = 0;
   const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
+
+  const walletYearScale = d3
+    .scaleLinear()
+    .domain([0, 1])
+    .range([2005, 2020])
+    .clamp(true);
 
   // RENT CHART
   const rent_data = rentData.map((d) => ({
@@ -152,6 +159,12 @@
 <svelte:head>
   <title>Home</title>
 </svelte:head>
+
+<Scrolly bind:progress={walletProgress}>
+  <svelte:fragment slot="viz">
+    <Wallet selectedYear={walletYearScale(walletProgress)} />
+  </svelte:fragment>
+</Scrolly>
 
 <body
   style="width: 100%; max-width: 140ch; margin: 0 auto; padding: 1em; min-height: 150vh"
