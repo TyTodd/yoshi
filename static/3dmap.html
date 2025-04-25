@@ -44,7 +44,6 @@
       }
 
       /* Map container ----------------------------------------------------- */
-
       #map-wrapper,
       #chart-wrapper {
         flex: 1;
@@ -60,40 +59,18 @@
         height: 40vh;
       }
 
-      /* #map-wrapper {
-        width: 80%;
-        margin: 0 auto;
-      } */
-      /* #map,
-      #corp_map,
-      #house_map {
-        width: 50%;
-        height: 40vh;
-      } */
-
-      /* #chart-wrapper {
-        width: 40vw;
-        margin: none;
-        gap: 40px;
-      } */
-
-      /* #corpChart,
-      #houseChart {
-        width: 50%;
-        height: 40vh;
-      } */
-
       /* Tooltip ----------------------------------------------------------- */
       #tooltip {
         position: fixed; /* fixed = viewport coords */
-        top: 45%;
-        left: 45%;
+        top: 85%;
+        left: 65%;
         display: none;
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
+        background: white(0, 0, 0, 0.8);
+        color: black;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         font-size: 13px;
-        padding: 8px 10px;
-        border-radius: 4px;
+        padding: 8px 15px;
+        border-radius: 15px;
         pointer-events: none;
         z-index: 999;
       }
@@ -186,54 +163,6 @@
 
     <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
     <div id="tooltip"></div>
-
-    <!-- <div id="legend-corp">
-      <strong>Corporate Ownership Rate</strong>
-      <div id="legend-gradient"></div>
-      <div style="display: flex; justify-content: space-between">
-        <span>0%</span><span>69%</span>
-      </div>
-    </div>
-    <div id="legend-elevation">
-      <strong>Median House Price (Elevation)</strong>
-      <div
-        style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px"
-      >
-        <div style="display: flex; align-items: center">
-          <div
-            style="
-              width: 20px;
-              height: 6px;
-              background: #999;
-              margin-right: 8px;
-            "
-          ></div>
-          <span>$200k</span>
-        </div>
-        <div style="display: flex; align-items: center">
-          <div
-            style="
-              width: 40px;
-              height: 6px;
-              background: #999;
-              margin-right: 8px;
-            "
-          ></div>
-          <span>$650k</span>
-        </div>
-        <div style="display: flex; align-items: center">
-          <div
-            style="
-              width: 60px;
-              height: 6px;
-              background: #999;
-              margin-right: 8px;
-            "
-          ></div>
-          <span>$1.3M</span>
-        </div>
-      </div>
-    </div> -->
 
     <!--‑‑ Application script --------------------------------------------- -->
     <script>
@@ -423,7 +352,6 @@
           }, {});
 
           geojson = json;
-          // console.log(data);
         }
 
         /* ------------------------------------------------------------------
@@ -521,14 +449,13 @@
          *  Rendering helpers
          * ----------------------------------------------------------------*/
         function updateYear(y) {
-          // console.log("updating year");
           const year = Math.max(START_YEAR, Math.min(END_YEAR, Math.round(y)));
           sliderLabel.textContent = year;
           if (sliderEl.value !== String(year)) sliderEl.value = year;
 
           currentYear = year;
-          aggregated = aggregateByYear(data, 2004, currentYear);
-          drawCharts(aggregated);
+          // aggregated = aggregateByYear(data, 2004, 2024);
+          // drawCharts(aggregated);
 
           deckOverlay_corp.setProps({
             layers: [makeCorpLayer({ scale: 1, year })],
@@ -536,6 +463,55 @@
           deckOverlay_house.setProps({
             layers: [makeHouseLayer({ scale: 1, year })],
           });
+
+          // chart highlight
+          const yearIndex = corpChart.data.labels.indexOf(year);
+          const corpValue = corpChart.data.datasets[0].data[yearIndex];
+          const houseValue = houseChart.data.datasets[0].data[yearIndex];
+
+          // Remove previous highlight if it exists
+          corpChart.data.datasets = corpChart.data.datasets.filter(
+            (ds) => ds.label !== "Selected Year"
+          );
+
+          // Add highlight dataset to the end
+          corpChart.data.datasets.push({
+            label: "Selected Year",
+            data: corpChart.data.labels.map((_, i) =>
+              i === yearIndex ? corpValue : null
+            ),
+            borderColor: "transparent",
+            backgroundColor: "blue",
+            pointRadius: 6,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "blue",
+            showLine: false,
+          });
+
+          houseChart.data.datasets = houseChart.data.datasets.filter(
+            (ds) => ds.label !== "Selected Year"
+          );
+
+          houseChart.data.datasets.push({
+            label: "Selected Year",
+            data: houseChart.data.labels.map((_, i) =>
+              i === yearIndex ? houseValue : null
+            ),
+            borderColor: "transparent",
+            backgroundColor: "red",
+            pointRadius: 6,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "red",
+            showLine: false,
+          });
+
+          corpChart.update({ duration: 0 });
+          houseChart.update({ duration: 0 });
+
+          if (selectedHood) {
+            const rows = aggregateByYear(data, START_YEAR, END_YEAR);
+            showHood(selectedHood, rows);
+          }
         }
 
         function attachEvents() {
@@ -608,7 +584,6 @@
           if (!object) return;
           const hood = object.properties.blockgr2020_ctr_neighb_name?.trim();
           const rows = aggregateByYear(data, START_YEAR, END_YEAR);
-          // console.log("clicked: ", hood);
 
           if (hood === selectedHood) {
             // clicked the same hood → hide it
@@ -649,7 +624,6 @@
               avgHomePrice: count ? priceSum / count : null,
             });
           }
-          // console.log(results);
 
           return results;
         }
@@ -687,9 +661,30 @@
                 ],
               },
               options: {
+                legend: {
+                  labels: {
+                    fontColor: "#000",
+                  },
+                },
+                tooltips: {
+                  bodyFontColor: "#000",
+                  titleFontColor: "#000",
+                },
                 scales: {
                   yAxes: [
-                    { ticks: { callback: (v) => (v * 100).toFixed(0) + "%" } },
+                    {
+                      ticks: {
+                        fontColor: "#000",
+                        callback: (v) => (v * 100).toFixed(0) + "%",
+                      },
+                    },
+                  ],
+                  xAxes: [
+                    {
+                      ticks: {
+                        fontColor: "#000",
+                      },
+                    },
                   ],
                 },
               },
@@ -712,9 +707,30 @@
                 ],
               },
               options: {
+                legend: {
+                  labels: {
+                    fontColor: "#000",
+                  },
+                },
+                tooltips: {
+                  bodyFontColor: "#000",
+                  titleFontColor: "#000",
+                },
                 scales: {
                   yAxes: [
-                    { ticks: { callback: (v) => "$" + v.toLocaleString() } },
+                    {
+                      ticks: {
+                        fontColor: "#000",
+                        callback: (v) => "$" + v.toLocaleString(),
+                      },
+                    },
+                  ],
+                  xAxes: [
+                    {
+                      ticks: {
+                        fontColor: "#000",
+                      },
+                    },
                   ],
                 },
               },
@@ -747,30 +763,84 @@
         }
 
         function showHood(hood, rows) {
-          const colour = hoodColor(hood);
+          const c = hoodColor(hood);
           const s = seriesFor(hood, rows);
+          const yearIndex = rows.findIndex((r) => r.year === currentYear);
+          const corpValue = s.corp[yearIndex];
+          const houseValue = s.price[yearIndex];
 
-          corpChart.data.datasets[1] = {
-            // slot 1: hood line
+          if (selectedHood) {
+            corpChart.data.datasets = corpChart.data.datasets.filter(
+              (ds) =>
+                ds.label !== selectedHood + " corp-rate" &&
+                ds.label !== selectedHood + " highlight"
+            );
+            houseChart.data.datasets = houseChart.data.datasets.filter(
+              (ds) =>
+                ds.label !== selectedHood + " median price" &&
+                ds.label !== selectedHood + " highlight"
+            );
+          }
+
+          // Add neighborhood line
+          corpChart.data.datasets.push({
             label: hood + " corp-rate",
             data: s.corp,
-            borderColor: colour,
+            borderColor: c,
             backgroundColor: "rgba(0,0,0,0)",
             lineTension: 0,
-          };
-          houseChart.data.datasets[1] = {
-            // slot 1: hood line
+            pointRadius: 2,
+          });
+
+          houseChart.data.datasets.push({
             label: hood + " median price",
             data: s.price,
-            borderColor: colour,
+            borderColor: c,
             backgroundColor: "rgba(0,0,0,0)",
             lineTension: 0,
-          };
+            pointRadius: 2,
+          });
+
+          // Add highlight dot on hood line at currentYear
+          corpChart.data.datasets.push({
+            label: hood + " highlight",
+            data: s.corp.map((_, i) => (i === yearIndex ? corpValue : null)),
+            borderColor: "transparent",
+            backgroundColor: c,
+            pointRadius: 6,
+            pointHoverRadius: 6,
+            pointBackgroundColor: c,
+            showLine: false,
+            order: 99,
+          });
+
+          houseChart.data.datasets.push({
+            label: hood + " highlight",
+            data: s.price.map((_, i) => (i === yearIndex ? houseValue : null)),
+            borderColor: "transparent",
+            backgroundColor: c,
+            pointRadius: 6,
+            pointHoverRadius: 6,
+            pointBackgroundColor: c,
+            showLine: false,
+            order: 99,
+          });
+
+          corpChart.update({ duration: 0 });
+          houseChart.update({ duration: 0 });
         }
 
         function hideHood() {
-          corpChart.data.datasets.splice(1, 1);
-          houseChart.data.datasets.splice(1, 1);
+          corpChart.data.datasets = corpChart.data.datasets.filter(
+            (ds) =>
+              !ds.label?.includes("corp-rate") &&
+              !ds.label?.includes("highlight")
+          );
+          houseChart.data.datasets = houseChart.data.datasets.filter(
+            (ds) =>
+              !ds.label?.includes("median price") &&
+              !ds.label?.includes("highlight")
+          );
         }
 
         /* ------------------------------------------------------------------

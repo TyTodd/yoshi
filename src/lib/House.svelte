@@ -2,6 +2,7 @@
   import * as d3 from "d3";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
+  import { flip } from "svelte/animate";
 
   export let data = [];
 
@@ -19,7 +20,7 @@
     .domain(data.map((d) => d.year))
     .range([0, innerWidth])
     .padding(0)
-    .paddingOuter(data.length < 6 ? 0.5 : 0);
+    .paddingOuter(data.length < 6 ? 0.8 : 0);
 
   $: yScale = d3
     .scaleLinear()
@@ -85,19 +86,37 @@
       <g bind:this={yAxis} />
 
       {#each data as d (d.year)}
-        <image
-          href={selectHouseImage(d.rent)}
-          x={xScale(d.year)}
-          y={yScale(d.rent)}
-          width={Math.min(Math.max(xScale.bandwidth(), 60), 180)}
-          height={innerHeight - yScale(d.rent)}
-          preserveAspectRatio="none"
-          in:fly={{ x: 200, duration: 600, easing: cubicOut }}
-          out:fly={{ x: 200, duration: 600, easing: cubicOut }}
+        <g
+          class="house-bar"
+          transform={`translate(${xScale(d.year)}, ${yScale(d.rent)})`}
           on:mouseover={(e) => handleMouseOver(e, d)}
           on:mouseout={handleMouseOut}
-          style="cursor: pointer;"
-        />
+        >
+          <image
+            href={selectHouseImage(d.rent)}
+            width={Math.min(Math.max(xScale.bandwidth(), 60), 180)}
+            height={innerHeight - yScale(d.rent)}
+            preserveAspectRatio="none"
+            style="cursor: pointer;"
+            in:fly={{ x: 200, duration: 600, easing: cubicOut }}
+            out:fly={{ x: 200, duration: 600, easing: cubicOut }}
+          />
+        </g>
+        <!-- <g animate:flip>
+          <image
+            href={selectHouseImage(d.rent)}
+            x={xScale(d.year)}
+            y={yScale(d.rent)}
+            width={Math.min(Math.max(xScale.bandwidth(), 60), 180)}
+            height={innerHeight - yScale(d.rent)}
+            preserveAspectRatio="none"
+            in:fly={{ x: 200, duration: 600, easing: cubicOut }}
+            out:fly={{ x: 200, duration: 600, easing: cubicOut }}
+            on:mouseover={(e) => handleMouseOver(e, d)}
+            on:mouseout={handleMouseOut}
+            style="cursor: pointer;"
+          />
+        </g> -->
       {/each}
     </g>
   </svg>
@@ -155,5 +174,8 @@
     gap: 24px;
     flex-wrap: wrap;
     justify-content: center;
+  }
+  .house-bar {
+    transition: transform 0.5s ease;
   }
 </style>

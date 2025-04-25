@@ -7,9 +7,9 @@
   import Scrolly from "svelte-scrolly";
   import rentData from "$lib/boston_rent_estimates.json";
 
-  //PIE CHART
+  // PIE CHART
   let pieData = [];
-  let geoData = [];
+  let geoData = []; // LINE GRAPH
   let pieProgress = 0;
   let selectedYear = 0;
   let selectedIndex = -1;
@@ -47,26 +47,29 @@
         };
       })
       .sort((a, b) => +a.year - +b.year);
-    // console.log("pie data");
-    // console.log(pieData);
 
     geoData = Array.from(
       d3.group(raw_data, (d) => `${d.Year}-${d.Neighborhood}`).entries()
     )
       .map(([key, entries]) => {
         const year = entries[0].Year;
-        const neighborhood = entries[0].Neighborhood;
-        const corp = d3.mean(entries, (d) => d.corp_own_rate);
-        const house_price = d3.mean(entries, (d) => d.Median_House_Price);
+        const hood = entries[0].Neighborhood?.trim();
+        const corp_own_rate = d3.mean(entries, (d) => d.corp_own_rate);
+        const median_house_price = d3.mean(
+          entries,
+          (d) => d.Median_House_Price
+        );
 
         return {
           year,
-          neighborhood,
-          corp,
-          house_price,
+          hood,
+          corp_own_rate,
+          median_house_price,
         };
       })
       .sort((a, b) => +a.year - +b.year);
+    // console.log("geoData");
+    // console.log(geoData);
   });
 
   $: if (pieData.length) {
@@ -90,12 +93,12 @@
       0,
       Math.min(rent_data.length - 1, Math.floor(rentProgress / step))
     );
-    console.log("rent data: ");
-    console.log(rentData);
+    // console.log("rent data: ");
+    // console.log(rentData);
 
     visibleRentData = rent_data.slice(0, rentYearIndex + 1);
-    console.log("visible data at ", rentYearIndex);
-    console.log(visibleRentData);
+    // console.log("visible data at ", rentYearIndex);
+    // console.log(visibleRentData);
   }
 
   /* ----------------------- 3-D MAP (parent / iframe driver) ----------------------- */
@@ -125,8 +128,6 @@
     const win = e.target.contentWindow;
     if (win) win.postMessage({ year: mapYear }, "*");
   }
-
-  // console.log(rentData[0]);
 </script>
 
 <svelte:head>
@@ -138,7 +139,7 @@
 >
   <h1>Corporate ownership, owner occupancy & landlord occupancy</h1>
   <Scrolly bind:progress={pieProgress}>
-    <div style="min-height: 200vh;">
+    <!-- <div style="min-height: 200vh;">
       {#each pieData as p}
         <p>
           {p.year}: {(p.data[0].value * 100).toFixed(2)} % of was corporate-owned,
@@ -147,7 +148,8 @@
           ).toFixed(2)} % owned by landlords.
         </p>
       {/each}
-    </div>
+    </div> -->
+    <div style="height: 300vh" />
     <!-- Add this before your text -->
     <svelte:fragment slot="viz">
       {#key selectedYear}
@@ -170,8 +172,9 @@
         src="3dmap.html"
         title="3-D map"
         class="w-full h-full border-0"
-        style="width:100%; height: 80%; border-width:0px"
+        style="width:100%; height: 85%; border-width:0px"
       />
+      <!-- <Line data={geoData} /> -->
     </svelte:fragment>
     <div style="height: 300vh" />
 
