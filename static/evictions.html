@@ -448,7 +448,6 @@
           });
         }
         let evictionPieChart;
-
         function createPieChart(year) {
           const { total, rent_issue } = evictionCountsByYear[year] || {
             total: 0,
@@ -456,34 +455,43 @@
           };
           const non_rent_issue = total - rent_issue;
 
-          const ctx = document
-            .getElementById("evictionPieChart")
-            .getContext("2d");
-
-          if (evictionPieChart) {
-            evictionPieChart.destroy(); // Destroy the old one
-          }
-
-          evictionPieChart = new Chart(ctx, {
-            type: "pie",
-            data: {
-              labels: ["Rent Issue", "Other Causes"],
-              datasets: [
-                {
-                  data: [rent_issue, non_rent_issue],
-                  backgroundColor: ["#c3424f", "#4593b6"],
+          if (!evictionPieChart) {
+            // Create once if it doesn't exist
+            const ctx = document
+              .getElementById("evictionPieChart")
+              .getContext("2d");
+            evictionPieChart = new Chart(ctx, {
+              type: "pie",
+              data: {
+                labels: ["Rent Issue", "Other Causes"],
+                datasets: [
+                  {
+                    data: [rent_issue, non_rent_issue],
+                    backgroundColor: ["#c3424f", "#4593b6"],
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                animation: {
+                  animateRotate: true,
+                  animateScale: true,
                 },
-              ],
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: "bottom",
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                  },
                 },
               },
-            },
-          });
+            });
+          } else {
+            // ✅ Just update the data and call .update()
+            evictionPieChart.data.datasets[0].data = [
+              rent_issue,
+              non_rent_issue,
+            ];
+            evictionPieChart.update();
+          }
         }
 
         /* ------------------------------------------------------------------
