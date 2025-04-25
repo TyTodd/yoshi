@@ -9,6 +9,12 @@
   let mergedData = [];
   $: filteredData = mergedData.filter((d) => d.year === selectedYear); // reactive filtered data
 
+  // Add new variables for the ratio chart
+  let ratioSvg;
+  const ratioMargin = { top: 10, right: 10, bottom: 20, left: 30 };
+  const ratioWidth = 300 - ratioMargin.left - ratioMargin.right;
+  const ratioHeight = 200 - ratioMargin.top - ratioMargin.bottom;
+
   // Load CSV data dynamically
   onMount(async () => {
     console.log("Loading CSV data...");
@@ -155,35 +161,129 @@
     //   .text((d) => `${((d.rent / d.income) * 100).toFixed(1)}%`)
     //   .attr("fill", "black");
   }
+
+  // Create reactive statement for ratio chart
+  $: if (mergedData.length && ratioSvg) {
+    // Clear previous chart
+    d3.select(ratioSvg).selectAll("*").remove();
+
+    // Calculate ratios for all years
+    const ratioData = mergedData.map((d) => ({
+      year: d.year,
+      ratio: (d.rent / d.income) * 100,
+    }));
+
+    // Create scales
+    const x = d3
+      .scaleLinear()
+      .domain([
+        d3.min(ratioData, (d) => d.year),
+        d3.max(ratioData, (d) => d.year),
+      ])
+      .range([0, ratioWidth]);
+
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(ratioData, (d) => d.ratio)])
+      .range([ratioHeight, 0]);
+
+    // Create chart group
+    const g = d3
+      .select(ratioSvg)
+      .attr("width", ratioWidth + ratioMargin.left + ratioMargin.right)
+      .attr("height", ratioHeight + ratioMargin.top + ratioMargin.bottom)
+      .append("g")
+      .attr("transform", `translate(${ratioMargin.left},${ratioMargin.top})`);
+
+    // Add line
+    const line = d3
+      .line()
+      .x((d) => x(d.year))
+      .y((d) => y(d.ratio));
+
+    g.append("path")
+      .datum(ratioData)
+      .attr("fill", "none")
+      .attr("stroke", "#69b3a2")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    // Add highlighted dot for selected year
+    g.append("circle")
+      .attr("cx", x(selectedYear))
+      .attr("cy", y(ratioData.find((d) => d.year === selectedYear).ratio))
+      .attr("r", 6)
+      .attr("fill", "#ff7f0e");
+
+    // Add axes (simplified)
+    g.append("g")
+      .attr("transform", `translate(0,${ratioHeight})`)
+      .call(d3.axisBottom(x).tickFormat(d3.format("d")).ticks(5));
+
+    g.append("g").call(
+      d3
+        .axisLeft(y)
+        .tickFormat((d) => d + "%")
+        .ticks(5)
+    );
+  }
 </script>
 
-<!-- Create a container with relative positioning -->
-<div class="visualization-container">
-  <img
-    src="walletnoBack.png"
-    alt="Wallet illustration"
-    style="width: 100%; max-width: 300px; margin-top: 20px;"
-  />
-  <!-- Position SVG absolutely over the image -->
-  <svg bind:this={svg}></svg>
+<!-- Replace the existing container structure with this new layout -->
+<div>
+  <h2 style="text-align: center;">Rent to Income Ratio</h2>
+  <div
+    class="layout-container"
+    style="display: flex; justify-content: center; align-items: center;"
+  >
+    <div class="visualization-container">
+      <img
+        src="walletnoBack.png"
+        alt="Wallet illustration"
+        style="width: 100%; max-width: 300px; margin-top: 20px;"
+      />
+      <svg bind:this={svg}></svg>
+    </div>
+
+    <div class="ratio-chart">
+      <svg bind:this={ratioSvg}></svg>
+    </div>
+  </div>
 </div>
 
-<!-- Year slider can stay outside the container -->
 <input type="range" min="2005" max="2021" bind:value={selectedYear} step="1" />
 Selected Year: {selectedYear}
 
 <style>
+  .layout-container {
+    display: flex;
+    flex-direction: row;
+    gap: 5rem;
+    align-items: center;
+  }
+
   .visualization-container {
     position: relative;
     width: fit-content;
   }
 
-  svg {
+  .ratio-chart {
+    width: 300px;
+    height: 100%;
+    display: flex;
+  }
+
+  .visualization-container svg {
     position: absolute;
     top: 59%;
     left: 19%;
     transform: translate(-50%, -50%);
     font-family: sans-serif;
+  }
+
+  .ratio-chart svg {
+    position: static;
+    transform: none;
   }
 
   text {
