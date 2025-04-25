@@ -13,15 +13,17 @@
   let pieProgress = 0;
   let selectedYear = 0;
   let selectedIndex = -1;
-  let walletProgress = 0;
+  $: walletProgress = 0;
   const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
 
   const walletYearScale = d3
     .scaleLinear()
-    .domain([0, 1])
-    .range([2005, 2020])
+    .domain([0, 100])
+    .range([2005, 2021])
     .clamp(true);
 
+  $: console.log("walletProgress updated:", walletProgress);
+  $: console.log("walletYearScale:", walletYearScale(walletProgress));
   // RENT CHART
   const rent_data = rentData.map((d) => ({
     year: +d.Year,
@@ -161,8 +163,9 @@
 </svelte:head>
 
 <Scrolly bind:progress={walletProgress}>
+  <div style="height: 300vh" />
   <svelte:fragment slot="viz">
-    <Wallet selectedYear={walletYearScale(walletProgress)} />
+    <Wallet selectedYear={Math.round(walletYearScale(walletProgress))} />
   </svelte:fragment>
 </Scrolly>
 

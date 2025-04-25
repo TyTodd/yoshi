@@ -5,7 +5,7 @@
   const slant = -41;
   const barWidth = 106;
   let svg;
-  export let selectedYear = 2021; // single selected year filter
+  export let selectedYear = 2008; // single selected year filter
   let mergedData = [];
   $: filteredData = mergedData.filter((d) => d.year === selectedYear); // reactive filtered data
 
@@ -260,6 +260,7 @@ Selected Year: {selectedYear} -->
     flex-direction: row;
     gap: 5rem;
     align-items: center;
+    width: 100vw;
   }
 
   .visualization-container {
