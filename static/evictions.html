@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Boston Corporate Ownership 3‑D Map</title>
+
+    <!--‑‑ External libraries ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑ -->
+    <script src="https://unpkg.com/deck.gl@^9.0.0-beta/dist.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css"
+    />
+
+    <!--‑‑ Styles ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑ -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
+
+      /* Header ------------------------------------------------------------ */
+      #header {
+        position: sticky;
+        top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: #fff;
+        z-index: 10;
+      }
+      #filter {
+        width: 300px;
+      }
+      #filter label {
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+      }
+
+      /* Map container ----------------------------------------------------- */
+      /* #map-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      #eviction_map {
+        width: 50%;
+        height: 60vh;
+      } */
+      #main-content {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 95%;
+        margin: 1rem auto;
+      }
+
+      #eviction_map {
+        width: 85%;
+        height: 65vh;
+      }
+
+      #evictionPieChart {
+        height: 300px;
+        width: 300px;
+        max-width: 300px;
+        min-width: 300px;
+        position: absolute;
+        left: 70%;
+      }
+
+      /* Tooltip ----------------------------------------------------------- */
+      #tooltip {
+        position: fixed; /* fixed = viewport coords */
+        top: 85%;
+        left: 65%;
+        display: none;
+        background: white(0, 0, 0, 0.8);
+        color: black;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        font-size: 13px;
+        padding: 8px 15px;
+        border-radius: 15px;
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      /* Legend ------------------------------------------------------------ */
+      #legend-corp {
+        position: absolute;
+        bottom: 1rem;
+        right: 2rem;
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+        width: 160px;
+        z-index: 999;
+      }
+      #legend-elevation {
+        position: absolute;
+        bottom: 1rem;
+        right: 15rem;
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+        width: 200px;
+        z-index: 999;
+      }
+      #legend-gradient {
+        height: 12px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: linear-gradient(
+          to right,
+          #4593b6,
+          #77d8cc,
+          #f4ad62,
+          #c3424f
+        );
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--‑‑ Header with slider --------------------------------------------- -->
+    <div id="header">
+      <h2>need title</h2>
+
+      <div id="filter">
+        <label for="year-slider">
+          Filter by year: <span id="year-value">2020</span>
+        </label>
+        <input
+          id="year-slider"
+          type="range"
+          min="2020"
+          max="2024"
+          step="1"
+          value="2020"
+          style="width: 100%"
+        />
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #555;
+          "
+        >
+          <span>2020</span><span>2024</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="main-content">
+      <div id="eviction_map"></div>
+      <canvas id="evictionPieChart" width="250" height="250"></canvas>
+    </div>
+
+    <!-- <div id="map-wrapper">
+      <div id="eviction_map"></div>
+    </div>
+    <canvas id="evictionPieChart" width="300" height="300"></canvas> -->
+
+    <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
+    <div id="tooltip"></div>
+
+    <!--‑‑ Application script --------------------------------------------- -->
+    <script>
+      (function () {
+        /* ------------------------------------------------------------------
+         *  Constants & configuration
+         * ----------------------------------------------------------------*/
+        const START_YEAR = 2020;
+        const END_YEAR = 2024;
+        const INITIAL_YEAR = 2020;
+        let currentYear = INITIAL_YEAR;
+        let selectedHood = null;
+        const filteredColors = d3.schemeTableau10.filter(
+          (color) => color !== "#4e79a7" && color !== "#e15759"
+        );
+
+        const hoodColor = d3.scaleOrdinal(filteredColors);
+
+        const {
+          MapboxOverlay,
+          GeoJsonLayer,
+          COORDINATE_SYSTEM,
+          AmbientLight,
+          PointLight,
+          LightingEffect,
+        } = deck;
+
+        const minRentIssues = 0;
+        const maxRentIssues = 500;
+
+        mapboxgl.accessToken =
+          "pk.eyJ1IjoiYXV0dW1uYXJ0aXN0IiwiYSI6ImNtOTFtdTdvejAycTQyaW42aDA4M3duMGoifQ.ySZoxVyD5VLs_LUcDp3jPA";
+
+        /* ------------------------------------------------------------------
+         *  DOM references
+         * ----------------------------------------------------------------*/
+        const mapEl1 = document.getElementById("eviction_map");
+        const sliderEl = document.getElementById("year-slider");
+        const sliderLabel = document.getElementById("year-value");
+        const tooltipEl = document.getElementById("tooltip");
+
+        /* ------------------------------------------------------------------
+         *  State
+         * ----------------------------------------------------------------*/
+        let geojson = null;
+        let data = null;
+        let deckOverlay_eviction = null;
+
+        /* ------------------------------------------------------------------
+         *  Map initialisation
+         * ----------------------------------------------------------------*/
+        //corporate ownership map:
+        const eviction_map = new mapboxgl.Map({
+          container: mapEl1,
+          style: "mapbox://styles/mapbox/light-v11",
+          center: [-71.057083, 42.3],
+          maxZoom: 10,
+          minZoom: 10,
+          zoom: 10,
+          pitch: 45,
+          antialias: true,
+          projection: "mercator",
+        });
+
+        /* ------------------------------------------------------------------
+         *  Lights
+         * ----------------------------------------------------------------*/
+        const ambientLight = new AmbientLight({
+          color: [255, 230, 200],
+          intensity: 1.0,
+        });
+        const pointLight = new PointLight({
+          color: [255, 230, 200],
+          intensity: 0.8,
+          position: [-71.057083, 42.361145, 8000],
+        });
+        const lightingEffect = new LightingEffect({ ambientLight, pointLight });
+
+        //hover highlights
+        let hoveredHood = null;
+        const HIGHLIGHT = [255, 105, 180, 255];
+        /* ------------------------------------------------------------------
+         *  Scales
+         * ----------------------------------------------------------------*/
+        /* --- Colour ramp (blue ▸ turquoise ▸ orange ▸ red) --- */
+        const COLOR_RAMP = ["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"];
+        const colorScaleRent = d3
+          .scaleLinear()
+          .domain(
+            d3.range(
+              minRentIssues,
+              maxRentIssues,
+              (maxRentIssues - minRentIssues) / (COLOR_RAMP.length - 1)
+            )
+          )
+          .range(COLOR_RAMP)
+          .interpolate(d3.interpolateLab);
+
+        const elevationScale_rent = d3
+          .scaleLinear()
+          .domain([minRentIssues, maxRentIssues])
+          .range([100, 3000]);
+
+        /* ------------------------------------------------------------------
+         *  Data loading
+         * ----------------------------------------------------------------*/
+        let evictionCountsByYear = {};
+        async function loadData() {
+          const [csv, json] = await Promise.all([
+            d3.csv("Boston_Evictions.csv"),
+            fetch("boston_neighborhoods.geojson").then((r) => r.json()),
+          ]);
+
+          data = csv.reduce((acc, d) => {
+            const hood = d.Neighborhood.trim();
+            const year = +d.year;
+            const rentIssue =
+              d.rent_issue === true ||
+              d.rent_issue === "true" ||
+              d.rent_issue === "True";
+
+            if (!acc[hood]) {
+              acc[hood] = {};
+            }
+            if (!acc[hood][year]) {
+              acc[hood][year] = { rent_issues: 0 };
+            }
+
+            if (!evictionCountsByYear[year]) {
+              evictionCountsByYear[year] = { total: 0, rent_issue: 0 };
+            }
+
+            evictionCountsByYear[year].total += 1;
+
+            if (rentIssue) {
+              acc[hood][year].rent_issues += 1;
+              evictionCountsByYear[year].rent_issue += 1;
+            }
+
+            return acc;
+          }, {});
+
+          console.log(data);
+
+          geojson = json;
+        }
+
+        /* ------------------------------------------------------------------
+         *  Layer factory
+         * ----------------------------------------------------------------*/
+        function makeEvictionLayer({ scale = 1, year, hover }) {
+          return new GeoJsonLayer({
+            id: "boston-3d-eviction",
+            data: geojson,
+            pickable: true,
+            extruded: true,
+            wireframe: true,
+            stroked: true,
+            lineWidthMinPixels: 1,
+            getLineColor: [0, 0, 0, 180],
+            effects: [lightingEffect],
+            coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
+
+            material: {
+              ambient: 0.6,
+              diffuse: 0.8,
+              shininess: 32,
+              specularColor: [60, 60, 60],
+            },
+
+            getElevation: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              const rentIssues = data[hood]?.[year]?.rent_issues;
+              //   console.log(rentIssues);
+              const h =
+                rentIssues != null ? elevationScale_rent(rentIssues) : 100;
+              //   console.log("elevation: ", h);
+              //   console.log("scale: ", scale);
+              return h * scale;
+            },
+
+            getFillColor: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              if (hood === hover) return HIGHLIGHT;
+
+              const rentIssues = data[hood]?.[year]?.rent_issues;
+              if (rentIssues == null || isNaN(rentIssues))
+                return [200, 200, 200, 180];
+
+              const c = d3.color(colorScaleRent(rentIssues));
+              return [c.r, c.g, c.b, c.opacity * 255];
+            },
+            onHover: handleHover,
+            updateTriggers: {
+              getElevation: [scale, year],
+              getFillColor: [hover, year],
+            },
+          });
+        }
+
+        /* ------------------------------------------------------------------
+         *  Rendering helpers
+         * ----------------------------------------------------------------*/
+        function updateYear(y) {
+          const year = Math.max(START_YEAR, Math.min(END_YEAR, Math.round(y)));
+          sliderLabel.textContent = year;
+          if (sliderEl.value !== String(year)) sliderEl.value = year;
+
+          currentYear = year;
+
+          deckOverlay_eviction.setProps({
+            layers: [makeEvictionLayer({ scale: 1, year })],
+          });
+          createPieChart(year);
+        }
+
+        function attachEvents() {
+          /* Slider --------------------------------------------------------- */
+          sliderEl.addEventListener("input", () => updateYear(+sliderEl.value));
+
+          /* Parent iframe → child message listener ------------------------ */
+          window.addEventListener("message", (e) => {
+            if (typeof e.data?.year === "number") updateYear(e.data.year);
+          });
+        }
+
+        function handleHover({ object }) {
+          // name under cursor OR null when the pointer leaves any polygon
+          const hood = object
+            ? object.properties.blockgr2020_ctr_neighb_name?.trim()
+            : null;
+
+          /* --- TOOLTIP ------------------------------------------------------- */
+          if (!hood) {
+            tooltipEl.style.display = "none"; // hide when nothing is picked
+          } else {
+            const year = currentYear;
+            const rentIssues = data[hood]?.[year]?.rent_issues; // <-- define it first
+
+            let rentText = "N/A evictions caused by rent issues";
+            if (rentIssues != null) {
+              rentText = `${rentIssues.toLocaleString()} eviction${
+                rentIssues === 1 ? "" : "s"
+              } caused by rent issues`;
+            }
+
+            tooltipEl.innerHTML = `
+      <strong>${hood}</strong><br/>
+      Year: ${year}<br/>
+      ${rentText}
+    `;
+            tooltipEl.style.display = "block";
+          }
+
+          // highlight
+          if (hood === hoveredHood) return; // nothing changed
+
+          hoveredHood = hood; // update global
+
+          // rebuild both layers with the new "hover" value
+          deckOverlay_eviction.setProps({
+            layers: [
+              makeEvictionLayer({
+                scale: 1,
+                year: currentYear,
+                hover: hoveredHood,
+              }),
+            ],
+          });
+        }
+        let evictionPieChart;
+
+        function createPieChart(year) {
+          const { total, rent_issue } = evictionCountsByYear[year] || {
+            total: 0,
+            rent_issue: 0,
+          };
+          const non_rent_issue = total - rent_issue;
+
+          const ctx = document
+            .getElementById("evictionPieChart")
+            .getContext("2d");
+
+          if (evictionPieChart) {
+            evictionPieChart.destroy(); // Destroy the old one
+          }
+
+          evictionPieChart = new Chart(ctx, {
+            type: "pie",
+            data: {
+              labels: ["Rent Issue", "Other Causes"],
+              datasets: [
+                {
+                  data: [rent_issue, non_rent_issue],
+                  backgroundColor: ["#c3424f", "#4593b6"],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                },
+              },
+            },
+          });
+        }
+
+        /* ------------------------------------------------------------------
+         *  Bootstrap
+         * ----------------------------------------------------------------*/
+        async function init() {
+          await loadData();
+
+          const rentIssueCounts = [];
+
+          for (const hood in data) {
+            for (const year in data[hood]) {
+              const count = data[hood][year].rent_issues;
+              if (count != null) rentIssueCounts.push(count);
+            }
+          }
+
+          deckOverlay_eviction = new MapboxOverlay({
+            interleaved: true,
+            layers: [makeEvictionLayer({ scale: 1, year: INITIAL_YEAR })],
+          });
+          eviction_map.addControl(deckOverlay_eviction);
+          createPieChart(INITIAL_YEAR);
+
+          attachEvents();
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+      })();
+    </script>
+  </body>
+</html>

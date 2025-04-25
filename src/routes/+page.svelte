@@ -128,6 +128,25 @@
     const win = e.target.contentWindow;
     if (win) win.postMessage({ year: mapYear }, "*");
   }
+
+  /* ----------------------- 3-D MAP (parent / iframe driver) ----------------------- */
+  const MIN_evict = 2020;
+  const MAX_evict = 2024;
+
+  let evictionProgress = 0; // 0 → 1 from <Scrolly>
+  let evictionMapYear = MIN_evict; // integer we send to iframe
+  let evictionFrame; // <iframe> reference
+
+  $: {
+    // apply the “gear-ratio” then clamp to 1
+    const p = Math.min(evictionProgress * SLOW, 1);
+    evictionMapYear = Math.round(MIN_evict + p * (MAX_evict - MIN_evict));
+  }
+
+  // push every new year to the iframe
+  $: if (evictionFrame?.contentWindow) {
+    evictionFrame.contentWindow.postMessage({ year: evictionMapYear }, "*");
+  }
 </script>
 
 <svelte:head>
@@ -200,6 +219,22 @@
         <p>{d.year}: Rent ${d.rent}</p>
       {/each}
     </div> -->
+  </Scrolly>
+
+  <h1>Eviction</h1>
+  <Scrolly bind:progress={evictionProgress} --scrolly-layout="overlap">
+    <!-- viz slot -->
+    <svelte:fragment slot="viz">
+      <iframe
+        bind:this={evictionFrame}
+        on:load={handleLoad}
+        src="evictions.html"
+        title="3-D map"
+        class="w-full h-full border-0"
+        style="width:100%; height: 85%; border-width:0px"
+      />
+    </svelte:fragment>
+    <div style="height: 300vh" />
   </Scrolly>
 </body>
 
