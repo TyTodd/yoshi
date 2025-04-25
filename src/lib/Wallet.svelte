@@ -53,19 +53,33 @@
     g.selectAll(".rent")
       .data(data)
       .enter()
-      .append("polygon")
+      .append("path")
       .attr("class", "rent")
-      .attr("points", (d) => {
-        const xPos = 0; // fixed position instead of x(d.year)
-        const yBottom = height;
+      .attr("d", (d) => {
+        const xPos = 0;
         const yTop = y(d.rent);
+        const yBottom = height;
+        const slant = -41;
+        const barRight = xPos + barWidth;
+        const radius = 6;
+
+        const barHeight = yBottom - yTop;
+        const r = Math.min(radius, Math.abs(barHeight / 2));
+
+        const topLeftY = yTop;
+        const topRightY = yTop + slant;
+        const bottomLeftY = yBottom;
+        const bottomRightY = yBottom + slant + 1;
 
         return `
-          ${xPos},${yBottom}
-          ${xPos},${yTop}
-          ${xPos + barWidth},${yTop + slant}
-          ${xPos + barWidth},${yBottom + slant}
-        `;
+      M${xPos + r},${bottomLeftY}
+      Q${xPos},${bottomLeftY} ${xPos},${bottomLeftY - r}
+      L${xPos},${topLeftY}
+      L${barRight},${topRightY}
+      L${barRight},${bottomRightY - r}
+      Q${barRight},${bottomRightY} ${barRight - r},${bottomRightY + 2}
+      Z
+    `;
       })
       .attr("fill", "#ff7f0e");
 
@@ -73,19 +87,33 @@
     g.selectAll(".income")
       .data(data)
       .enter()
-      .append("polygon")
+      .append("path")
       .attr("class", "income")
-      .attr("points", (d) => {
-        const xPos = 0; // fixed position instead of x(d.year)
+      .attr("d", (d) => {
+        const xPos = 0;
         const yBottom = y(d.rent);
         const yTop = y(d.rent + d.income);
+        const slant = -41;
+        const barHeight = yBottom - yTop;
+
+        const radius = 6;
+        const r = Math.min(radius, Math.abs(barHeight / 2));
+        const rightR = -2;
+        const barRight = xPos + barWidth;
+
+        // Start both top corners at the same height
+        const leftTopY = yTop - slant - 13;
+        const rightTopY = yTop + 3;
 
         return `
-          ${xPos},${yBottom}
-          ${xPos},${yTop - slant - 11}
-          ${xPos + barWidth},${yTop}
-          ${xPos + barWidth},${yBottom + slant}
-        `;
+    M${xPos},${yBottom}
+    L${xPos},${leftTopY + r}
+    Q${xPos},${leftTopY} ${xPos + r},${leftTopY}
+    L${barRight - r},${rightTopY}
+    Q${barRight},${rightTopY} ${barRight},${rightTopY + rightR}
+    L${barRight},${yBottom + slant}
+    Z
+  `;
       })
       .attr("fill", "#69b3a2");
 
@@ -132,7 +160,7 @@
 <!-- Create a container with relative positioning -->
 <div class="visualization-container">
   <img
-    src="wallet.png"
+    src="walletnoBack.png"
     alt="Wallet illustration"
     style="width: 100%; max-width: 300px; margin-top: 20px;"
   />
