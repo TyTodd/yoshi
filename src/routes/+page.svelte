@@ -22,8 +22,8 @@
     .range([2005, 2021])
     .clamp(true);
 
-  $: console.log("walletProgress updated:", walletProgress);
-  $: console.log("walletYearScale:", walletYearScale(walletProgress));
+  // $: console.log("walletProgress updated:", walletProgress);
+  // $: console.log("walletYearScale:", walletYearScale(walletProgress));
   // RENT CHART
   const rent_data = rentData.map((d) => ({
     year: +d.Year,
@@ -162,13 +162,6 @@
   <title>Home</title>
 </svelte:head>
 
-<Scrolly bind:progress={walletProgress}>
-  <div style="height: 300vh" />
-  <svelte:fragment slot="viz">
-    <Wallet selectedYear={Math.round(walletYearScale(walletProgress))} />
-  </svelte:fragment>
-</Scrolly>
-
 <body
   style="width: 100%; max-width: 140ch; margin: 0 auto; padding: 1em; min-height: 150vh"
 >
@@ -235,6 +228,14 @@
         <p>{d.year}: Rent ${d.rent}</p>
       {/each}
     </div> -->
+  </Scrolly>
+
+  <h1>Rent v. Income</h1>
+  <Scrolly bind:progress={walletProgress}>
+    <div style="height: 300vh" />
+    <svelte:fragment slot="viz">
+      <Wallet selectedYear={Math.round(walletYearScale(walletProgress))} />
+    </svelte:fragment>
   </Scrolly>
 
   <h1>Eviction</h1>

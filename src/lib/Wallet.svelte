@@ -7,6 +7,7 @@
   let svg;
   export let selectedYear = 2008; // single selected year filter
   let mergedData = [];
+  let incomeRentData = [];
   $: filteredData = mergedData.filter((d) => d.year === selectedYear); // reactive filtered data
 
   // Add new variables for the ratio chart
@@ -27,9 +28,9 @@
 
   // Function to update the chart based on the selected year
   $: if (filteredData.length && svg) {
-    console.log("Updating chart for selected year:", selectedYear);
+    // console.log("Updating chart for selected year:", selectedYear);
     const data = filteredData;
-    console.log("Filtered data:", data);
+    // console.log("Filtered data:", data);
 
     // Set up chart dimensions and margins
     const margin = { top: 0, right: 30, bottom: 48, left: 100 },
@@ -38,7 +39,7 @@
 
     // Clear previous chart elements
     d3.select(svg).selectAll("*").remove();
-    console.log("Cleared previous SVG contents");
+    // console.log("Cleared previous SVG contents");
 
     // Define y scale for stacked bar values (income + rent)
     const y = d3
@@ -53,7 +54,7 @@
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
-    console.log("Appended chart group element");
+    // console.log("Appended chart group element");
 
     // Draw rent portion at the bottom
     g.selectAll(".rent")
@@ -195,6 +196,29 @@
       .append("g")
       .attr("transform", `translate(${ratioMargin.left},${ratioMargin.top})`);
 
+    // Add Y grid lines
+    g.append("g")
+      .call(
+        d3
+          .axisLeft(y)
+          .tickSize(-ratioWidth) // Make the ticks extend horizontally across the chart
+          .tickFormat("") // Remove labels from grid lines
+          .ticks(5)
+      )
+      .selectAll("line")
+      .attr("opacity", 0.3);
+
+    g.selectAll("path").attr("opacity", 0.3);
+
+    g.append("line")
+      .attr("x1", 0)
+      .attr("x2", ratioWidth)
+      .attr("y1", y(25))
+      .attr("y2", y(25))
+      .attr("stroke", "red")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "6,3");
+
     // Add line
     const line = d3
       .line()
@@ -226,11 +250,37 @@
         .tickFormat((d) => d + "%")
         .ticks(5)
     );
+    // console.log("data: ", mergedData);
+    incomeRentData = (() => {
+      const d = mergedData.find((d) => d.year === selectedYear);
+      // console.log("d: ", d.income);
+      // console.log("d: ", d.rent.toFixed(2));
+      return [
+        {
+          label: "Income",
+          value: `$${d.income}`,
+          color: "#69b3a2", // same green as your income bar
+        },
+        {
+          label: "Rent",
+          value: `$${d.rent.toFixed(2)}`,
+          color: "#ff7f0e", // same orange as your rent bar
+        },
+        {
+          label: "Ratio",
+          value: `${((d.rent / d.income) * 100).toFixed(1)}%`,
+          color: "grey", // neutral color for ratio
+        },
+      ];
+    })();
+    // console.log("income Data", incomeRentData);
   }
+  // console.log("income rent data: ", incomeRentData);
+  // console.log("filtered data: ", filteredData);
 </script>
 
 <!-- Replace the existing container structure with this new layout -->
-<div>
+<div class="page-container">
   <h2 style="text-align: center;">Rent to Income Ratio</h2>
   <div
     class="layout-container"
@@ -249,19 +299,44 @@
       <svg bind:this={ratioSvg}></svg>
     </div>
   </div>
+  <ul class="legend">
+    <p><strong>Year: {selectedYear}</strong></p>
+    {#each incomeRentData as d, index}
+      <li style="--color: {d.color};">
+        <span class="swatch"></span>
+        {d.label}: <em>{d.value}</em>
+      </li>
+    {/each}
+  </ul>
 </div>
 
 <!-- <input type="range" min="2005" max="2021" bind:value={selectedYear} step="1" />
 Selected Year: {selectedYear} -->
 
 <style>
+  .page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+  }
+
   .layout-container {
     display: flex;
     flex-direction: row;
     gap: 5rem;
     align-items: center;
-    width: 100vw;
+    justify-content: center;
+    width: 100%;
   }
+
+  /* .layout-container {
+    display: flex;
+    flex-direction: row;
+    gap: 5rem;
+    align-items: center;
+    width: 100vw;
+  } */
 
   .visualization-container {
     position: relative;
@@ -287,8 +362,35 @@ Selected Year: {selectedYear} -->
     transform: none;
   }
 
-  text {
+  .legend {
+    display: grid;
+    gap: 10px;
+    flex: 1;
+    min-width: 200px;
+    max-width: 200px;
+    padding: 10px;
+    border: 1px solid black;
+  }
+
+  .legend p {
+    margin: 0 0 5px 0;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
     font-size: 12px;
-    pointer-events: none;
+  }
+
+  .swatch {
+    width: 10px;
+    height: 10px;
+    background-color: var(--color);
+    border-radius: 2px;
+    display: inline-block;
   }
 </style>
