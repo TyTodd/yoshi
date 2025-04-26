@@ -19,7 +19,8 @@
   // Load CSV data dynamically
   onMount(async () => {
     console.log("Loading CSV data...");
-    const raw = await d3.csv("/income_and_rent.csv", d3.autoType);
+    // const raw = await d3.csv("/income_and_rent.csv", d3.autoType);
+    const raw = await d3.csv("income_and_rent.csv", d3.autoType);
     console.log("Raw data loaded:", raw);
     // Multiply rent by 12 for annual rent
     raw.forEach((d) => (d.rent = d.rent * 12));
