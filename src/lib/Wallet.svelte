@@ -9,7 +9,6 @@
   let mergedData = [];
   let incomeRentData = [];
   $: filteredData = mergedData.filter((d) => d.year === selectedYear); // reactive filtered data
-
   // Add new variables for the ratio chart
   let ratioSvg;
   const ratioMargin = { top: 10, right: 10, bottom: 20, left: 30 };
@@ -214,8 +213,8 @@
     g.append("line")
       .attr("x1", 0)
       .attr("x2", ratioWidth)
-      .attr("y1", y(25))
-      .attr("y2", y(25))
+      .attr("y1", y(30))
+      .attr("y2", y(30))
       .attr("stroke", "red")
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "6,3");
