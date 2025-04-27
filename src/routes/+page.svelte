@@ -159,7 +159,7 @@
     </div>
     <div style="height: 100vh; ">
       <img
-        src="/images/people_wearing_masks.jpeg"
+        src="/yoshi/images/people_wearing_masks.jpeg"
         alt="People wearing masks"
         style="width: 600px; object-fit: cover; border-radius: 50%;"
       />
@@ -193,14 +193,14 @@
         </p>
       </div>
       <img
-        src="/images/eviction_notice.jpeg"
+        src="/yoshi/images/eviction_notice.jpeg"
         alt="eviction notice"
         style="width: 500px; object-fit: cover; border-radius: 50%;"
       />
     </div>
     <div style="height: 100vh; ">
       <img
-        src="/images/moving.gif"
+        src="/yoshi/images/moving.gif"
         alt="Guy holding up a house thats heavy"
         width="500px"
       />
@@ -225,7 +225,7 @@
 
     <div style="height: 100vh; ">
       <img
-        src="/images/housing.jpg"
+        src="/yoshi/images/housing.jpg"
         alt="Guy holding up a house thats heavy"
         style="width: 500px; object-fit: cover; border-radius: 15%;"
       />
@@ -248,7 +248,7 @@
       style="display: flex; align-items: center; gap: 20px; text-align: center;"
     >
       <img
-        src="/images/timThinking.jpeg"
+        src="/yoshi/images/timThinking.jpeg"
         alt="MIT Tim the beaver thinking while looking at a laptop"
         style="width: 500px; object-fit: cover; border-radius: 25%;"
       />
@@ -350,7 +350,7 @@
     <svelte:fragment slot="viz">
       <div class="video-wrapper">
         <video autoplay loop muted playsinline>
-          <source src="/images/cantReach.mp4" type="video/mp4" />
+          <source src="/yoshi/images/cantReach.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>
@@ -463,7 +463,7 @@
     style="display: flex; justify-content: center; align-items: center; font-size: 30px; padding: 2em 4em; height: 100vh; text-align: center; gap: 50px"
   >
     <img
-      src="/images/timAngry.jpeg"
+      src="/yoshi/images/timAngry.jpeg"
       alt="Guy holding up a house thats heavy"
       style="width: 500px; object-fit: cover; border-radius: 50%"
     />
@@ -570,7 +570,7 @@
     style="display: flex; justify-content: center; align-items: center; padding: 4em; height: 100vh; gap: 100px;"
   >
     <img
-      src="/images/timDreams.png"
+      src="/yoshi/images/timDreams.png"
       alt="Guy holding up a house that's heavy"
       style="width: 500px; max-width: 40vw; object-fit: cover; border-radius: 25%;"
     />
@@ -653,7 +653,7 @@
     style="display: flex; justify-content: center; align-items: center; padding: 4em; height: 100vh; gap: 100px;"
   >
     <img
-      src="/images/timSad.png"
+      src="/yoshi/images/timSad.png"
       alt="Guy holding up a house that's heavy"
       style="width: 500px; max-width: 40vw; object-fit: cover; border-radius: 50%;"
     />
