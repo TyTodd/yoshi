@@ -80,8 +80,8 @@
       /* Tooltip ----------------------------------------------------------- */
       #tooltip {
         position: fixed; /* fixed = viewport coords */
-        top: 85%;
-        left: 65%;
+        top: 1%;
+        left: 50%;
         display: none;
         background: white(0, 0, 0, 0.8);
         color: black;
@@ -137,19 +137,17 @@
   <body>
     <!--‑‑ Header with slider --------------------------------------------- -->
     <div id="header">
-      <h2>need title</h2>
-
       <div id="filter">
         <label for="year-slider">
-          Filter by year: <span id="year-value">2020</span>
+          Filter by year: <span id="year-value">2019</span>
         </label>
         <input
           id="year-slider"
           type="range"
-          min="2020"
+          min="2019"
           max="2024"
           step="1"
-          value="2020"
+          value="2019"
           style="width: 100%"
         />
         <div
@@ -160,7 +158,7 @@
             color: #555;
           "
         >
-          <span>2020</span><span>2024</span>
+          <span>2019</span><span>2024</span>
         </div>
       </div>
     </div>
@@ -184,10 +182,18 @@
         /* ------------------------------------------------------------------
          *  Constants & configuration
          * ----------------------------------------------------------------*/
-        const START_YEAR = 2020;
+        const START_YEAR = 2019;
         const END_YEAR = 2024;
-        const INITIAL_YEAR = 2020;
+        const INITIAL_YEAR = 2019;
         let currentYear = INITIAL_YEAR;
+        const evictionTypePercentage = {
+          2019: 78.8,
+          2020: 58.2,
+          2021: 60.7,
+          2022: 61.4,
+          2023: 71.3,
+          2024: 71.9,
+        };
         let selectedHood = null;
         const filteredColors = d3.schemeTableau10.filter(
           (color) => color !== "#4e79a7" && color !== "#e15759"
@@ -286,40 +292,23 @@
         let evictionCountsByYear = {};
         async function loadData() {
           const [csv, json] = await Promise.all([
-            d3.csv("Boston_Evictions.csv"),
+            d3.csv("boston_evictions_2019_2024.csv"),
             fetch("boston_neighborhoods.geojson").then((r) => r.json()),
           ]);
 
           data = csv.reduce((acc, d) => {
             const hood = d.Neighborhood.trim();
-            const year = +d.year;
-            const rentIssue =
-              d.rent_issue === true ||
-              d.rent_issue === "true" ||
-              d.rent_issue === "True";
+            const year = +d.Year;
+            const evictions = +d.TotalFilings;
+            const rentIssues = +d.EstimatedNonPaymentFilings;
 
-            if (!acc[hood]) {
-              acc[hood] = {};
-            }
-            if (!acc[hood][year]) {
-              acc[hood][year] = { rent_issues: 0 };
-            }
-
-            if (!evictionCountsByYear[year]) {
-              evictionCountsByYear[year] = { total: 0, rent_issue: 0 };
-            }
-
-            evictionCountsByYear[year].total += 1;
-
-            if (rentIssue) {
-              acc[hood][year].rent_issues += 1;
-              evictionCountsByYear[year].rent_issue += 1;
-            }
-
+            if (!acc[hood]) acc[hood] = {};
+            acc[hood][year] = {
+              total_filings: evictions,
+              rent_issues: rentIssues,
+            };
             return acc;
           }, {});
-
-          console.log(data);
 
           geojson = json;
         }
@@ -414,7 +403,8 @@
             tooltipEl.style.display = "none"; // hide when nothing is picked
           } else {
             const year = currentYear;
-            const rentIssues = data[hood]?.[year]?.rent_issues; // <-- define it first
+            const rentIssues = data[hood]?.[year]?.rent_issues;
+            const evictionsNum = data[hood]?.[year]?.total_filings;
 
             let rentText = "N/A evictions caused by rent issues";
             if (rentIssues != null) {
@@ -422,12 +412,19 @@
                 rentIssues === 1 ? "" : "s"
               } caused by rent issues`;
             }
+            let evictionText = "Eviction data not found";
+            if (evictionsNum != null) {
+              evictionText = `${evictionsNum.toLocaleString()} eviction${
+                evictionsNum === 1 ? "" : "s"
+              } total`;
+            }
 
             tooltipEl.innerHTML = `
-      <strong>${hood}</strong><br/>
-      Year: ${year}<br/>
-      ${rentText}
-    `;
+        <strong>${hood}</strong><br/>
+        Year: ${year}<br/>
+        Evictions: ${evictionText}<br/>
+        ${rentText}
+      `;
             tooltipEl.style.display = "block";
           }
 
@@ -447,13 +444,11 @@
             ],
           });
         }
+
         let evictionPieChart;
         function createPieChart(year) {
-          const { total, rent_issue } = evictionCountsByYear[year] || {
-            total: 0,
-            rent_issue: 0,
-          };
-          const non_rent_issue = total - rent_issue;
+          const rentIssuePercent = evictionTypePercentage[year];
+          const otherCausesPercent = 100 - rentIssuePercent;
 
           if (!evictionPieChart) {
             // Create once if it doesn't exist
@@ -463,10 +458,10 @@
             evictionPieChart = new Chart(ctx, {
               type: "pie",
               data: {
-                labels: ["Rent Issue", "Other Causes"],
+                labels: ["Non-Payment", "Other Causes"],
                 datasets: [
                   {
-                    data: [rent_issue, non_rent_issue],
+                    data: [rentIssuePercent, otherCausesPercent],
                     backgroundColor: ["#c3424f", "#4593b6"],
                   },
                 ],
@@ -487,8 +482,8 @@
           } else {
             // ✅ Just update the data and call .update()
             evictionPieChart.data.datasets[0].data = [
-              rent_issue,
-              non_rent_issue,
+              rentIssuePercent,
+              otherCausesPercent,
             ];
             evictionPieChart.update();
           }

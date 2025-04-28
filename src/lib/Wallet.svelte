@@ -273,15 +273,12 @@
         },
       ];
     })();
-    // console.log("income Data", incomeRentData);
   }
-  // console.log("income rent data: ", incomeRentData);
-  // console.log("filtered data: ", filteredData);
 </script>
 
 <!-- Replace the existing container structure with this new layout -->
 <div class="page-container">
-  <h2 style="text-align: center;">Rent to Income Ratio</h2>
+  <!-- <h2 style="text-align: center;">Rent to Income Ratio</h2> -->
   <div
     class="layout-container"
     style="display: flex; justify-content: center; align-items: center;"

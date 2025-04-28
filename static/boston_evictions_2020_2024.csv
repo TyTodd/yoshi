@@ -1,0 +1,69 @@
+Neighborhood,Year,EstimatedNonPaymentFilings,TotalFilings
+Allston,2020,27,46.0
+Back Bay,2020,26,44.0
+Beacon Hill,2020,20,35.0
+Brighton,2020,36,61.0
+Charlestown,2020,15,26.0
+Chinatown,2020,5,9.0
+Dorchester,2020,345,592.0
+Downtown,2020,44,76.0
+East Boston,2020,33,57.0
+Hyde Park,2020,76,131.0
+Jamaica Plain,2020,37,64.0
+Longwood,2020,39,67.0
+Mattapan,2020,80,137.0
+Mission Hill,2020,40,69.0
+Roslindale,2020,12,21.0
+Roxbury,2020,122,209.0
+South Boston,2020,29,49.0
+South Boston Waterfront,2020,15,25.0
+South End,2020,93,160.0
+West Roxbury,2020,8,13.0
+Dorchester,2021,228,376.0
+Roxbury,2021,74,122.0
+East Boston,2021,73,120.0
+Mattapan,2021,59,97.0
+Jamaica Plain,2021,59,98.0
+Brighton,2021,49,81.0
+Allston,2021,47,78.0
+West Roxbury,2021,22,36.0
+Roslindale,2021,56,93.0
+Charlestown,2021,10,16.0
+South Boston,2021,12,19.0
+Boston (citywide),2021,207,341.0
+Dorchester,2022,287,467.0
+Roxbury,2022,104,169.0
+East Boston,2022,84,136.0
+Mattapan,2022,114,186.0
+Jamaica Plain,2022,74,120.0
+Brighton,2022,66,108.0
+Allston,2022,45,73.0
+West Roxbury,2022,26,43.0
+Roslindale,2022,76,123.0
+Charlestown,2022,23,37.0
+South Boston,2022,27,44.0
+Boston (citywide),2022,287,467.0
+Dorchester,2023,661,927.0
+Roxbury,2023,312,438.0
+East Boston,2023,125,175.0
+Mattapan,2023,200,280.0
+Jamaica Plain,2023,97,136.0
+Brighton,2023,96,134.0
+Allston,2023,79,111.0
+West Roxbury,2023,51,71.0
+Roslindale,2023,108,151.0
+Charlestown,2023,46,64.0
+South Boston,2023,66,92.0
+Boston (citywide),2023,566,794.0
+Dorchester,2024,815,1134.0
+Roxbury,2024,480,667.0
+East Boston,2024,170,236.0
+Mattapan,2024,343,477.0
+Jamaica Plain,2024,142,198.0
+Brighton,2024,142,198.0
+Allston,2024,101,141.0
+West Roxbury,2024,79,110.0
+Roslindale,2024,186,258.0
+Charlestown,2024,74,103.0
+South Boston,2024,88,123.0
+Boston (citywide),2024,872,1213.0

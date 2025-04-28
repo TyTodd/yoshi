@@ -76,7 +76,6 @@
   };
 </script>
 
-<h1>need title</h1>
 <div class="chart-container">
   <svg {width} {height}>
     <g transform={`translate(${margin.left},${margin.top})`}>
