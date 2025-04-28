@@ -18,6 +18,7 @@
     timAngry: "/yoshi/images/timAngry.jpeg",
     timDreams: "/yoshi/images/timDreams.png",
     timSad: "/yoshi/images/timSad.png",
+    timHappy: "/yoshi/images/timHappy.jpeg",
     cantReachVideo: "/yoshi/images/cantReach.mp4",
     housing2: "/yoshi/images/housing2.jpg",
     boston: "/yoshi/images/aerialBoston.jpg",
@@ -493,7 +494,7 @@
         style="width:100%; height: 71%; border-width:0px"
       />
     </svelte:fragment>
-    <div style="height: 600vh;">
+    <div style="height: 300vh;">
       <div class="viz2">
         {#if mapYear >= 2005 && mapYear <= 2008}
           <div
@@ -507,7 +508,7 @@
               increase in the average median housing prices from 2004 to 2024.
               Just as the corporate ownership rate in Boston increased from 5.2%
               to 25%, the median house price in Boston increased from $314,532
-              to $[INSERT NUMBER].
+              to $659,616.71.
             </p>
           </div>
         {:else if mapYear >= 2009 && mapYear <= 2015}
