@@ -9,6 +9,8 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
     <link
       rel="stylesheet"
@@ -35,25 +37,17 @@
         z-index: 10;
       }
       #filter {
+        visibility: hidden;
         width: 300px;
       }
       #filter label {
+        visibility: hidden;
         display: block;
         font-size: 0.9rem;
         margin-bottom: 0.25rem;
       }
 
       /* Map container ----------------------------------------------------- */
-      /* #map-wrapper {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-      #eviction_map {
-        width: 50%;
-        height: 60vh;
-      } */
       #main-content {
         display: flex;
         flex-direction: row;
@@ -69,21 +63,21 @@
       }
 
       #evictionPieChart {
-        height: 300px;
-        width: 300px;
-        max-width: 300px;
-        min-width: 300px;
+        height: 400px;
+        width: 400px;
+        max-width: 400px;
+        min-width: 400px;
         position: absolute;
         left: 70%;
       }
 
       /* Tooltip ----------------------------------------------------------- */
       #tooltip {
-        position: fixed; /* fixed = viewport coords */
-        top: 1%;
-        left: 50%;
+        position: fixed;
+        bottom: 18%;
+        right: 25%;
         display: none;
-        background: white(0, 0, 0, 0.8);
+        background: white;
         color: black;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         font-size: 13px;
@@ -94,33 +88,28 @@
       }
 
       /* Legend ------------------------------------------------------------ */
-      #legend-corp {
+      #color-legend {
         position: absolute;
-        bottom: 1rem;
-        right: 2rem;
+        bottom: 31%;
+        left: 3%;
         background: #fff;
-        padding: 10px 15px;
+        padding: 10px 14px;
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         font-size: 12px;
-        width: 160px;
         z-index: 999;
-      }
-      #legend-elevation {
-        position: absolute;
-        bottom: 1rem;
-        right: 15rem;
-        background: #fff;
-        padding: 10px 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        font-size: 12px;
         width: 200px;
-        z-index: 999;
       }
-      #legend-gradient {
-        height: 12px;
-        margin: 8px 0;
+
+      .legend-title {
+        font-weight: bold;
+        margin-bottom: 6px;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      .legend-gradient {
+        height: 14px;
         border: 1px solid #ccc;
         border-radius: 4px;
         background: linear-gradient(
@@ -130,51 +119,66 @@
           #f4ad62,
           #c3424f
         );
+        margin-bottom: 6px;
+      }
+
+      .legend-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: #333;
       }
     </style>
   </head>
 
   <body>
-    <!--‑‑ Header with slider --------------------------------------------- -->
-    <div id="header">
-      <div id="filter">
-        <label for="year-slider">
-          Filter by year: <span id="year-value">2019</span>
-        </label>
-        <input
-          id="year-slider"
-          type="range"
-          min="2019"
-          max="2024"
-          step="1"
-          value="2019"
-          style="width: 100%"
-        />
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: #555;
-          "
-        >
-          <span>2019</span><span>2024</span>
-        </div>
-      </div>
-    </div>
+    <h2
+      id="graph-year-label"
+      style="text-align: center; font-size: 24px; margin-bottom: 0.5em"
+    >
+      Year: 2019
+    </h2>
 
     <div id="main-content">
       <div id="eviction_map"></div>
-      <canvas id="evictionPieChart" width="250" height="250"></canvas>
+      <canvas id="evictionPieChart" width="400" height="400"></canvas>
     </div>
-
-    <!-- <div id="map-wrapper">
-      <div id="eviction_map"></div>
-    </div>
-    <canvas id="evictionPieChart" width="300" height="300"></canvas> -->
 
     <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
+    <div id="color-legend">
+      <div class="legend-title">Estimated Rent Issue Filings</div>
+      <div class="legend-gradient"></div>
+      <div class="legend-labels">
+        <span>0</span>
+        <span>900</span>
+      </div>
+    </div>
+
     <div id="tooltip"></div>
+    <div id="filter">
+      <label for="year-slider">
+        Filter by year: <span id="year-value">2019</span>
+      </label>
+      <input
+        id="year-slider"
+        type="range"
+        min="2019"
+        max="2024"
+        step="1"
+        value="2019"
+        style="width: 100%"
+      />
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.75rem;
+          color: #555;
+        "
+      >
+        <span>2019</span><span>2024</span>
+      </div>
+    </div>
 
     <!--‑‑ Application script --------------------------------------------- -->
     <script>
@@ -208,6 +212,7 @@
           AmbientLight,
           PointLight,
           LightingEffect,
+          TextLayer,
         } = deck;
 
         const minRentIssues = 0;
@@ -239,9 +244,9 @@
           container: mapEl1,
           style: "mapbox://styles/mapbox/light-v11",
           center: [-71.057083, 42.3],
-          maxZoom: 10,
-          minZoom: 10,
-          zoom: 10,
+          maxZoom: 10.5,
+          minZoom: 10.5,
+          zoom: 10.5,
           pitch: 45,
           antialias: true,
           projection: "mercator",
@@ -365,6 +370,28 @@
             },
           });
         }
+        function makeLabelLayer() {
+          return new TextLayer({
+            id: "neighborhood-labels",
+            data: geojson.features,
+            pickable: false,
+            getPosition: (f) => {
+              const [lng, lat] = turf.centroid(f).geometry.coordinates;
+              const rentIssues =
+                data[f.properties.blockgr2020_ctr_neighb_name]?.[currentYear]
+                  ?.rent_issues || 0;
+              const zOffset = elevationScale_rent(rentIssues) + 200; // 200 meters above top
+              return [lng, lat, zOffset];
+            },
+            getText: (f) => f.properties.blockgr2020_ctr_neighb_name,
+            getSize: 12,
+            getColor: "black",
+            sizeUnits: "meters",
+            sizeScale: 30,
+            fontFamily: "Arial",
+            coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
+          });
+        }
 
         /* ------------------------------------------------------------------
          *  Rendering helpers
@@ -375,10 +402,17 @@
           if (sliderEl.value !== String(year)) sliderEl.value = year;
 
           currentYear = year;
+          document.getElementById(
+            "graph-year-label"
+          ).textContent = `Year: ${currentYear}`;
 
           deckOverlay_eviction.setProps({
             layers: [makeEvictionLayer({ scale: 1, year })],
           });
+          // deckOverlay_eviction.setProps({
+          //   layers: [makeEvictionLayer({ scale: 1, year }), makeLabelLayer()],
+          // });
+
           createPieChart(year);
         }
 
@@ -418,12 +452,13 @@
                 evictionsNum === 1 ? "" : "s"
               } total`;
             }
-
             tooltipEl.innerHTML = `
-        <strong>${hood}</strong><br/>
-        Year: ${year}<br/>
-        Evictions: ${evictionText}<br/>
-        ${rentText}
+        <div style="display: flex; gap: 24px; align-items: center; font-size: 18px;">
+          <div><strong>${hood ?? "None selected"}</strong></div>
+          <div>Year: ${year}</div>
+          <div>Evictions: ${evictionText}</div>
+          <div>Rent Issues: ${rentText}</div>
+        </div>
       `;
             tooltipEl.style.display = "block";
           }
@@ -443,6 +478,16 @@
               }),
             ],
           });
+          // deckOverlay_eviction.setProps({
+          //   layers: [
+          //     makeEvictionLayer({
+          //       scale: 1,
+          //       year: currentYear,
+          //       hover: hoveredHood,
+          //     }),
+          //     makeLabelLayer(),
+          //   ],
+          // });
         }
 
         let evictionPieChart;
@@ -476,8 +521,21 @@
                   legend: {
                     position: "bottom",
                   },
+                  datalabels: {
+                    color: "#fff",
+                    formatter: (value, context) => {
+                      const label =
+                        context.chart.data.labels[context.dataIndex];
+                      return `${label}\n${value.toFixed(1)}%`;
+                    },
+                    font: {
+                      weight: "bold",
+                      size: 14,
+                    },
+                  },
                 },
               },
+              plugins: [ChartDataLabels], // 🔥 Register the plugin
             });
           } else {
             // ✅ Just update the data and call .update()
@@ -508,6 +566,13 @@
             interleaved: true,
             layers: [makeEvictionLayer({ scale: 1, year: INITIAL_YEAR })],
           });
+          // deckOverlay_eviction = new MapboxOverlay({
+          //   interleaved: true,
+          //   layers: [
+          //     makeEvictionLayer({ scale: 1, year: INITIAL_YEAR }),
+          //     makeLabelLayer(),
+          //   ],
+          // });
           eviction_map.addControl(deckOverlay_eviction);
           createPieChart(INITIAL_YEAR);
 

@@ -36,7 +36,17 @@
     "images/building4p2.jpg",
     "images/building5.jpg",
     "images/building6.jpg",
-    "images/building7.jpg",
+    "images/building6.jpg",
+    "images/building8.jpg",
+  ];
+  const legendImages = [
+    "images/building1.jpg",
+    "images/building2.jpg",
+    "images/building3.jpg",
+    "images/building4.jpg",
+    "images/building4p2.jpg",
+    "images/building5.jpg",
+    "images/building6.jpg",
     "images/building8.jpg",
   ];
 
@@ -83,6 +93,28 @@
 
       <g transform={`translate(0, ${innerHeight})`} bind:this={xAxis} />
       <g bind:this={yAxis} />
+      <!-- X-axis label -->
+      <text
+        x={width / 2}
+        y={height - 30}
+        text-anchor="middle"
+        font-size="14"
+        fill="black"
+      >
+        Year
+      </text>
+
+      <!-- Y-axis label (rotated) -->
+      <text
+        x={-height / 2}
+        y={-50}
+        transform="rotate(-90)"
+        text-anchor="middle"
+        font-size="14"
+        fill="black"
+      >
+        Rent ($)
+      </text>
 
       {#each data as d (d.year)}
         <g
@@ -122,25 +154,63 @@
   {/if}
 </div>
 
+<div class="building-legend">
+  {#each [2100, 2400, 2600, 2800, 3000, 3200, 3400, 3700] as rent, i}
+    <div class="legend-item">
+      <img src={legendImages[i]} alt="building icon" />
+      <span>${rent}</span>
+    </div>
+  {/each}
+</div>
+
 <style>
+  .building-legend {
+    display: flex;
+    padding-left: 40%;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+    color: #333;
+  }
+
+  .legend-item img {
+    height: 60px; /* Uniform height for all buildings */
+    width: auto; /* Maintain aspect ratio */
+    object-fit: contain; /* Fit inside the box without cropping */
+    margin-bottom: 4px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
   .chart-container {
+    display: flex;
+    justify-content: center;
     position: relative;
     width: 100%;
     user-select: none;
+  }
+
+  svg {
+    display: block;
+    max-width: 100%;
+    overflow: visible;
   }
 
   .gridlines {
     stroke: #ccc;
     stroke-opacity: 0.3;
   }
-
-  svg {
-    overflow: visible;
-  }
   .centered-tooltip-wrapper {
     position: absolute;
-    top: 100%;
-    left: 50%;
+    top: 110%;
+    left: 40%;
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 10;

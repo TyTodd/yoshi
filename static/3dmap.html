@@ -35,6 +35,7 @@
         z-index: 10;
       }
       #filter {
+        visibility: hidden;
         width: 300px;
       }
       #filter label {
@@ -52,20 +53,24 @@
         gap: 1rem;
       }
       #corp_map,
-      #house_map,
-      #corpChart,
-      #houseChart {
+      #house_map {
         width: 100%;
         height: 40vh;
+      }
+      #corpChart,
+      #houseChart {
+        max-height: 310px;
+        /* width: 80vw;
+        max-width: 80vw; */
       }
 
       /* Tooltip ----------------------------------------------------------- */
       #tooltip {
-        position: fixed; /* fixed = viewport coords */
+        position: fixed;
         top: 1%;
-        right: 30%;
+        left: 34%;
         display: none;
-        background: white(0, 0, 0, 0.8);
+        background: white;
         color: black;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         font-size: 13px;
@@ -76,31 +81,18 @@
       }
 
       /* Legend ------------------------------------------------------------ */
-      #legend-corp {
+      .map-legend {
         position: absolute;
-        bottom: 1rem;
-        right: 2rem;
         background: #fff;
-        padding: 10px 15px;
+        padding: 10px 14px;
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         font-size: 12px;
-        width: 160px;
+        width: 180px;
         z-index: 999;
       }
-      #legend-elevation {
-        position: absolute;
-        bottom: 1rem;
-        right: 15rem;
-        background: #fff;
-        padding: 10px 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        font-size: 12px;
-        width: 200px;
-        z-index: 999;
-      }
-      #legend-gradient {
+
+      .legend-gradient {
         height: 12px;
         margin: 8px 0;
         border: 1px solid #ccc;
@@ -113,43 +105,40 @@
           #c3424f
         );
       }
+
+      .legend-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: #333;
+      }
+
+      .chart-label {
+        position: absolute;
+        color: #222;
+        font-weight: bold;
+        font-size: 18px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 4px 8px;
+        border-radius: 4px;
+        pointer-events: none;
+        z-index: 1000;
+      }
     </style>
   </head>
 
   <body>
-    <!--‑‑ Header with slider --------------------------------------------- -->
-    <div id="header">
-      <div id="filter">
-        <label for="year-slider">
-          Filter by year: <span id="year-value">2004</span>
-        </label>
-        <input
-          id="year-slider"
-          type="range"
-          min="2004"
-          max="2024"
-          step="1"
-          value="2004"
-          style="width: 100%"
-        />
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: #555;
-          "
-        >
-          <span>2004</span><span>2024</span>
-        </div>
-      </div>
-    </div>
-
     <!--‑‑ Visuals ------------------------------------------------------------- -->
-    <div style="display: flex; gap: 2rem; width: 80%; margin: 0 auto">
+    <div style="display: flex; gap: 2rem; width: 100%">
       <!--‑‑ Map ------------------------------------------------------------- -->
       <div id="map-wrapper">
+        <p class="chart-label" style="top: 0; left: 20px">
+          Corporate Ownership
+        </p>
         <div id="corp_map"></div>
+        <p class="chart-label" style="top: 43%; left: 20px">
+          Median House Price
+        </p>
         <div id="house_map"></div>
       </div>
       <!--‑‑ Line graph ------------------------------------------------------------- -->
@@ -160,7 +149,43 @@
     </div>
 
     <!--‑‑ Tooltip & Legend ----------------------------------------------- -->
+    <div id="legend-house-map" class="map-legend" style="top: 28%; left: 34%">
+      <strong>Corporate Ownership Legend</strong>
+      <div class="legend-gradient"></div>
+      <div class="legend-labels"><span>0%</span><span>69%</span></div>
+    </div>
+    <div id="legend-house-map" class="map-legend" style="top: 70%; left: 34%">
+      <strong>Housing Price Legend</strong>
+      <div class="legend-gradient"></div>
+      <div class="legend-labels"><span>200000</span><span>1300000</span></div>
+    </div>
+
     <div id="tooltip"></div>
+
+    <div id="filter">
+      <label for="year-slider">
+        Filter by year: <span id="year-value">2004</span>
+      </label>
+      <input
+        id="year-slider"
+        type="range"
+        min="2004"
+        max="2024"
+        step="1"
+        value="2004"
+        style="width: 100%"
+      />
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.75rem;
+          color: #555;
+        "
+      >
+        <span>2004</span><span>2024</span>
+      </div>
+    </div>
 
     <!--‑‑ Application script --------------------------------------------- -->
     <script>
@@ -655,7 +680,6 @@
                     fill: true,
                     lineTension: 0,
                   },
-                  {},
                 ],
               },
               options: {
@@ -671,6 +695,12 @@
                 scales: {
                   yAxes: [
                     {
+                      scaleLabel: {
+                        display: true,
+                        labelString: "Corporate Ownership Rate (%)",
+                        fontColor: "#000",
+                        fontSize: 14,
+                      },
                       ticks: {
                         fontColor: "#000",
                         callback: (v) => (v * 100).toFixed(0) + "%",
@@ -679,6 +709,12 @@
                   ],
                   xAxes: [
                     {
+                      scaleLabel: {
+                        display: true,
+                        labelString: "Year",
+                        fontColor: "#000",
+                        fontSize: 14,
+                      },
                       ticks: {
                         fontColor: "#000",
                       },
@@ -701,7 +737,6 @@
                     fill: true,
                     lineTension: 0,
                   },
-                  {},
                 ],
               },
               options: {
@@ -717,6 +752,12 @@
                 scales: {
                   yAxes: [
                     {
+                      scaleLabel: {
+                        display: true,
+                        labelString: "Median Home Price (USD)",
+                        fontColor: "#000",
+                        fontSize: 14,
+                      },
                       ticks: {
                         fontColor: "#000",
                         callback: (v) => "$" + v.toLocaleString(),
@@ -725,6 +766,12 @@
                   ],
                   xAxes: [
                     {
+                      scaleLabel: {
+                        display: true,
+                        labelString: "Year",
+                        fontColor: "#000",
+                        fontSize: 14,
+                      },
                       ticks: {
                         fontColor: "#000",
                       },

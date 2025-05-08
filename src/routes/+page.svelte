@@ -7,42 +7,77 @@
   import Scrolly from "svelte-scrolly";
   import rentData from "$lib/boston_rent_estimates.json";
   import Wallet from "$lib/Wallet.svelte";
-  import { fade } from "svelte/transition";
+  import { fade, fly } from "svelte/transition";
 
+  // const images = {
+  //   peopleWearingMasks: "/yoshi/images/people_wearing_masks.jpeg",
+  //   evictionNotice: "/yoshi/images/eviction_notice.png",
+  //   movingGif: "/yoshi/images/moving.gif",
+  //   evilCorp: "/yoshi/images/evil_corps.png",
+  //   timThinking: "/yoshi/images/timThinking.jpeg",
+  //   timAngry: "/yoshi/images/timAngry.jpeg",
+  //   timDreams: "/yoshi/images/timDreams.png",
+  //   timSad: "/yoshi/images/timSad.png",
+  //   timHappy: "/yoshi/images/timHappy.jpeg",
+  //   cantReachVideo: "/yoshi/images/cantReach.mp4",
+  //   housing2: "/yoshi/images/housing2.jpg",
+  //   boston: "/yoshi/images/aerialBoston.jpg",
+  //   fight: "/yoshi/images/fightback.png",
+  //   bostonArt: "/yoshi/images/bostonArt.jpeg",
+  //   bostonSkyLine: "/yoshi/images/bostonSkyline.jpg",
+  //   vacancyHousing: "/yoshi/images/vacancy.jpeg",
+  // };
   const images = {
     peopleWearingMasks: "/yoshi/images/people_wearing_masks.jpeg",
-    evictionNotice: "/yoshi/images/eviction_notice.jpeg",
+    worried: "/yoshi/images/worried.png",
+    evictionNotice: "/yoshi/images/eviction_notice.png",
+    eviction: "/yoshi/images/evictionNotice2.jpg",
     movingGif: "/yoshi/images/moving.gif",
-    housing: "/yoshi/images/housing.jpg",
-    timThinking: "/yoshi/images/timThinking.jpeg",
-    timAngry: "/yoshi/images/timAngry.jpeg",
-    timDreams: "/yoshi/images/timDreams.png",
-    timSad: "/yoshi/images/timSad.png",
-    timHappy: "/yoshi/images/timHappy.jpeg",
+    evilCorp: "/yoshi/images/evil_corps.png",
+    frayed: "/yoshi/images/frayed.png",
     cantReachVideo: "/yoshi/images/cantReach.mp4",
-    housing2: "/yoshi/images/housing2.jpg",
-    boston: "/yoshi/images/aerialBoston.jpg",
-    fight: "/yoshi/images/fightback.png",
+    housing2: "/yoshi/images/housing2.png",
+    fight: "/yoshi/images/fight.png",
     bostonArt: "/yoshi/images/bostonArt.jpeg",
     bostonSkyLine: "/yoshi/images/bostonSkyline.jpg",
+    vacancyHousing: "/yoshi/images/vacancy.jpeg",
+    rent: "/yoshi/images/rentBurden.png",
   };
   // const images = {
   //   peopleWearingMasks: "/images/people_wearing_masks.jpeg",
-  //   evictionNotice: "/images/eviction_notice.jpeg",
+  //   worried: "/images/worried.png",
+  //   evictionNotice: "/images/eviction_notice.png",
+  //   eviction: "/images/evictionNotice2.jpg",
   //   movingGif: "/images/moving.gif",
-  //   housing: "/images/housing.jpg",
-  //   timThinking: "/images/timThinking.jpeg",
-  //   timAngry: "/images/timAngry.jpeg",
-  //   timDreams: "/images/timDreams.png",
-  //   timSad: "/images/timSad.png",
-  //   timHappy: "/images/timHappy.jpeg",
+  //   evilCorp: "/images/evil_corps.png",
+  //   frayed: "/images/frayed.png",
   //   cantReachVideo: "/images/cantReach.mp4",
-  //   housing2: "/images/housing2.jpg",
-  //   boston: "/images/aerialBoston.jpg",
-  //   fight: "/images/fightback.png",
+  //   housing2: "/images/housing2.png",
+  //   fight: "/images/fight.png",
   //   bostonArt: "/images/bostonArt.jpeg",
   //   bostonSkyLine: "/images/bostonSkyline.jpg",
+  //   vacancyHousing: "/images/vacancy.jpeg",
+  //   rent: "/images/rentBurden.png",
   // };
+
+  //text
+  let introProgress;
+  let transitionProgress;
+  let endingProgress;
+
+  //walking
+  let walkingProgress;
+  const frameCount = 12;
+
+  // Generate the image paths
+  // const walkingImages = Array.from(
+  //   { length: frameCount },
+  //   (_, i) => `/images/walking/walking${i + 1}.png`
+  // );
+  const walkingImages = Array.from(
+    { length: frameCount },
+    (_, i) => `/yoshi/images/walking/walking${i + 1}.png`
+  );
 
   let videoTextProgress = 0;
   // PIE CHART
@@ -178,6 +213,9 @@
     evictionFrame.contentWindow.postMessage({ year: evictionMapYear }, "*");
   }
   $: walletYear = Math.round(walletYearScale(walletProgress));
+  $: console.log("intro: ", introProgress);
+  $: console.log("transition: ", transitionProgress);
+  $: console.log("eviction: ", evictionProgress);
 </script>
 
 <svelte:head>
@@ -185,170 +223,269 @@
 </svelte:head>
 
 <body
-  style="width: 100%; max-width: 140ch; margin: 0 auto; padding: 1em; min-height: 150vh"
+  style="width: 100%; max-width: 100%; margin: 0 auto; padding: 1em; min-height: 150vh;"
 >
-  <!-- CONTEXT -->
-  <div style="height: 800vh; text-align: center; font-size: 30px;">
-    <div style="height: 100vh; ">
-      <h1>Priced Out:</h1>
-      <h2>The Death of the American Dream in Boston</h2>
-      <img
-        src={images.bostonSkyLine}
-        alt="People wearing masks"
-        style="width: 700px; object-fit: cover; border-radius: 50%;"
-      />
-      <hr />
-    </div>
-    <div style="height: 100vh; ">
-      <img
-        src={images.peopleWearingMasks}
-        alt="People wearing masks"
-        style="width: 600px; object-fit: cover; border-radius: 50%;"
-      />
-      <p>
-        After mid-2021 when
-        <span style="color: #1D3557;"><strong>COVID-era</strong></span>
-        protections and federal rent assistance expired, a wave of evictions has
-        since swept through the Greater Boston region.
-      </p>
-    </div>
-
-    <div
-      style="height: 100vh; display: flex; align-items: center; gap: 20px; text-align: center;"
-    >
-      <div>
-        <p>
-          State eviction filings now average 3,000 a month, up more than 15
-          percent from pre-pandemic levels, according to Matija Jankovic from
-          the Massachusetts Housing Partnership. Housing lawyers and advocates
-          say evictions have reached crisis levels, causing waves of
-          displacement that are ruining lives and communities in Boston.
-        </p>
-        <p>
-          This eviction crisis is another manifestation of Boston’s broader
-          housing affordability issue.
-        </p>
-      </div>
-      <img
-        src={images.evictionNotice}
-        alt="eviction notice"
-        style="width: 500px; object-fit: cover; border-radius: 50%;"
-      />
-    </div>
-    <div style="height: 100vh; font-size: 70px;">
-      <p>
-        <span style="color: #1D3557;"
-          ><strong>What are the culprits?</strong></span
-        >
-      </p>
-    </div>
-    <div style="height: 100vh; ">
-      <img
-        src={images.movingGif}
-        alt="Guy holding up a house thats heavy"
-        width="500px"
-      />
-      <p>
-        One is Greater Boston’s severe housing shortage, which has pushed the
-        rental vacancy rate down to
-        <span style="color: #1D3557;"><strong>2.5 percent</strong></span> over
-        the past few years, according to the Boston Foundation’s latest Housing
-        Report Card. Among the 75 largest metropolitan areas in the U.S.,
-        <span style="color: #1D3557;"><strong>only two</strong></span> have lower
-        rates than Boston.
-      </p>
-      <p>
-        <span style="color: #1D3557;"
-          ><strong
-            >This scarcity in rental vacancies has contributed to making Boston
-            one of the most expensive rental markets in America.</strong
-          ></span
-        >
-      </p>
-    </div>
-
-    <div style="height: 100vh; ">
-      <img
-        src={images.housing}
-        alt="Guy holding up a house thats heavy"
-        style="width: 500px; object-fit: cover; border-radius: 15%;"
-      />
-      <p>
-        However, we believe another culprit has been overlooked, and deserves
-        more investigation;
-      </p>
-      <p>
-        <span style="color: #1D3557;"
-          ><strong
-            >The increasing presence of corporations in Boston’s real estate
-            market.</strong
-          ></span
-        >
-      </p>
-    </div>
-
-    <!-- INTRODUCING TIM -->
-    <div
-      style="display: flex; align-items: stretch; gap: 20px; text-align: center; height: 150vh"
-    >
-      <div style="flex: 1; position: relative;">
+  <Scrolly bind:progress={introProgress}>
+    <!-- CONTEXT -->
+    <div style="height: 725vh; text-align: center; font-size: 30px;">
+      <div style="height: 100vh; ">
+        <h2>Priced Out:</h2>
+        <h2>The Death of the American Dream in Boston</h2>
         <img
-          src={images.timThinking}
-          alt="MIT Tim the beaver thinking while looking at a laptop"
-          style="width: 500px; object-fit: cover; border-radius: 25%; position: sticky; top: 20vh;"
+          src={images.bostonSkyLine}
+          alt="People wearing masks"
+          style="max-width: 700px; width: 700px; object-fit: cover; border-radius: 50%;"
         />
+        <hr />
+      </div>
+      <div
+        style="height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;"
+      >
+        <img
+          src={images.peopleWearingMasks}
+          alt="People wearing masks"
+          style="max-width: 600px; width: 600px; object-fit: cover; border-radius: 50%; position: absolute; top: 15%"
+        />
+        {#if introProgress > 17}
+          <p
+            in:fly={{ x: -500, duration: 600 }}
+            out:fly={{ x: -500, duration: 600 }}
+            style="width:60%; position: absolute; top: 23%"
+          >
+            After mid-2021 when COVID-era protections and <span class="blue"
+              ><strong>federal rent assistance expired</strong></span
+            >,
+            <span class="red"
+              ><strong
+                >a wave of evictions has since swept through the Greater Boston
+                region</strong
+              ></span
+            >.
+          </p>
+        {/if}
+      </div>
+      <div
+        style="height: 100vh; display: flex; align-items: center; gap: 50px; text-align: center;"
+      >
+        <div style="padding-left:100px; width: 50%">
+          <p>
+            State eviction filings now
+            <span class="blue"><strong>average 3,000 a month</strong></span>, up
+            more than
+            <span class="blue"
+              ><strong>15 percent from pre-pandemic levels</strong></span
+            >, according to Matija Jankovic from the Massachusetts Housing
+            Partnership. Housing lawyers and advocates say
+            <span class="red"
+              ><strong>evictions have reached crisis levels</strong></span
+            >, causing
+            <span class="red"><strong>waves of displacement</strong></span> that
+            are ruining lives and communities in Boston.
+          </p>
+          <p>
+            This eviction crisis is another manifestation of Boston’s broader
+            housing affordability issue.
+          </p>
+        </div>
+        <img
+          src={images.evictionNotice}
+          alt="eviction notice"
+          style="max-width: 500px; width: 500px; height: 450px; object-fit: cover; border-radius: 15%;"
+        />
+      </div>
+      <div
+        style="height: 80vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 70px;"
+      >
+        {#if introProgress > 45}
+          <h1
+            in:fly={{ y: 50, duration: 800 }}
+            out:fly={{ y: -50, duration: 800 }}
+          >
+            Who are the culprits?
+          </h1>
+        {/if}
+      </div>
+      <div
+        style="height: 110vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center; padding-top: 40px;"
+      >
+        <img
+          src={images.vacancyHousing}
+          alt="Guy holding up a house thats heavy"
+          style="max-width: 500px; width:500px"
+        />
+        <p style="width:60%;">
+          One is Greater Boston’s severe housing shortage, which has pushed the
+          <span class="blue"
+            ><strong>rental vacancy rate down to 2.5 percent</strong></span
+          >
+          over the past few years, according to the Boston Foundation’s latest Housing
+          Report Card. Among the 75 largest metropolitan areas in the U.S.,
+          <span class="blue"
+            ><strong>only two have lower rates than Boston</strong></span
+          >.
+        </p>
+        {#if introProgress > 60}
+          <p
+            in:fly={{ y: 80, duration: 600 }}
+            out:fly={{ y: 80, duration: 600 }}
+            style="width:60%;"
+          >
+            <span style="color: #1D3557;"
+              ><strong
+                >This scarcity in rental vacancies has contributed to making
+                Boston one of the most expensive rental markets in America.</strong
+              ></span
+            >
+          </p>
+        {/if}
       </div>
 
       <div
-        style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 4em 2em; font-size: 30px;"
+        style="height: 125vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center;"
       >
-        <p>
-          Tim the Beaver is an individual who makes $77,771 a year, the median
-          salary in Boston in 2024. Tim is looking to rent an apartment in
-          Boston for around $2000 a month. Tim hopes to save up to buy a house
-          in the future.
+        <img
+          src={images.evilCorp}
+          alt="Guy holding up a house thats heavy"
+          style="max-height: 500px; height: 500px; object-fit: cover; border-radius: 15%;"
+        />
+        <p style="width: 60%; padding-top: 30px; margin-bottom:0">
+          However, we believe another culprit has been overlooked, and deserves
+          more investigation;
         </p>
-        <p>
-          We’ll time-travel with Tim from 2004-2024 to show how Tim’s
-          experiences with the Boston area housing landscape would change.
-        </p>
+        {#if introProgress > 77}
+          <p
+            in:fly={{ y: 80, duration: 600 }}
+            out:fly={{ y: 80, duration: 600 }}
+            style="width: 60%; top: 1%;"
+          >
+            <span style="color: #1D3557;"
+              ><strong
+                >The increasing presence of corporations in Boston’s real estate
+                market.</strong
+              ></span
+            >
+          </p>
+        {/if}
       </div>
+
+      <!-- INTRODUCING TIM -->
+      <Scrolly bind:progress={walkingProgress} --scrolly-layout="overlay">
+        <div style="height: 120vh;">
+          <!-- Walker -->
+          <div
+            class="walker"
+            style="transform: translateX({Math.min(walkingProgress * 0.01, 1) *
+              80}vw);"
+          >
+            {#if walkingProgress > 0 && walkingProgress < 100}
+              <div
+                style="width: 400px; height: 400px; overflow: hidden; position: relative;"
+                transition:fade={{ duration: 200 }}
+              >
+                <img
+                  src={walkingImages[
+                    Math.floor(
+                      (Math.min(walkingProgress * 0.01, 1) * 80) % frameCount
+                    )
+                  ]}
+                  alt="Walking animation"
+                  style="width: 500px; height: auto; position: absolute; left: -80px; top: 0;"
+                />
+              </div>
+            {/if}
+          </div>
+          <!-- Text overlays -->
+          <div
+            style="position: sticky; top: 20%; left: 10%; width: 80%; color: black; font-size: 30px"
+          >
+            {#if walkingProgress > 20 && walkingProgress < 30}
+              <p transition:fade>This is Tim.</p>
+            {/if}
+
+            {#if walkingProgress >= 30 && walkingProgress < 50}
+              <div>
+                <p transition:fade>
+                  <span class="red"
+                    ><strong>Tim was recently evicted</strong></span
+                  >.
+                </p>
+                <img
+                  transition:fade
+                  src={images.eviction}
+                  alt="Walking animation"
+                  style="width: 400px; border-radius:50%"
+                />
+              </div>
+            {/if}
+
+            {#if walkingProgress >= 55 && walkingProgress < 70}
+              <p transition:fade>How this happened, you ask?</p>
+            {/if}
+
+            {#if walkingProgress >= 70 && walkingProgress < 90}
+              <p transition:fade>
+                Well, we'll travel back in time with Tim to answer that very
+                question.
+              </p>
+            {/if}
+          </div>
+        </div>
+      </Scrolly>
     </div>
-  </div>
+  </Scrolly>
   <!-- TRANSITION TO VISUAL 1-->
   <div
-    style="display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 30px; padding: 2em 4em; height: 100vh; text-align: center;"
+    style="
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 30px;
+  padding: 6em 4em 2em 4em;
+  height: 125vh;
+  text-align: center;
+"
   >
-    <p>
-      While the pandemic revealed the fragility of Boston’s housing system, it
-      also accelerated deeper, long-standing shifts that had been quietly
+    <p style="width:60%">
+      While the pandemic
+      <span class="red"
+        ><strong>revealed the fragility of Boston’s housing system</strong
+        ></span
+      >, it also accelerated deeper, long-standing shifts that had been quietly
       reshaping the city for years.
     </p>
-    <p>
+    <!-- <p style="width:60%">
       One of the most significant and arguabley most overlooked culprits behind
       this issue? The growing presence of corporate ownership in residential
       real estate.
-    </p>
-    <p>
+    </p> -->
+    <p style="width:60%">
       Before we can understand the pressures squeezing renters like Tim, we
-      first need to do the research and find out who really owns Boston’s homes
-      — and how that ownership has changed over time.
+      first need to do the research and find out
+      <span style="color: #1D3557;"
+        ><strong>who really owns Boston’s homes</strong></span
+      >
+      — and how that
+      <span style="color: #1D3557;"
+        ><strong>ownership has changed over time</strong></span
+      >.
     </p>
   </div>
 
   <!-- VISUAL 1 -->
-  <h1>Corporate ownership, owner occupancy & landlord occupancy</h1>
   <Scrolly bind:progress={pieProgress} --scrolly-layout="overlay">
-    <!-- <div style="min-height: 200vh;">
-      {#each pieData as p}
-        <p>
-          {p.year}: {(p.data[0].value * 100).toFixed(2)} % of was corporate-owned,
-          {(p.data[1].value * 100).toFixed(2)} % owner-occupied and {(
-            p.data[2].value * 100
-          ).toFixed(2)} % owned by landlords.
-        </p>
-      {/each}
-    </div> -->
+    <h1
+      style="
+    position: sticky;
+    top: 0;
+    padding: 0.5em 1em;
+    margin: 0;
+    font-size:30px;
+    z-index: 1000;
+  "
+    >
+      Corporate Ownership, Owner Occupancy & Landlord Occupancy Rates
+    </h1>
     <div style="height: 225vh; font-size:30px;">
       <div
         style="
@@ -405,8 +542,9 @@
               often act as corporate house flippers, seeking deals on apartment
               buildings, raising rent and slashing costs, and then selling the
               buildings at a higher price. When private equity firms buy up
-              properties, their aim is to squeeze as much profit as possible.
-              Rents skyrocket and become less flexible. Essential facilities,
+              properties, their aim is to <span class="red"
+                ><strong>squeeze as much profit as possible</strong></span
+              >. Rents skyrocket and become less flexible. Essential facilities,
               like heating, can become neglected. Sometimes landlords will force
               out existing tenants and replace them with new tenants who have
               the ability to pay more.
@@ -422,7 +560,9 @@
             >
               In the Boston area real-estate market, from 2004 to 2024, the
               percentage of residences owned by corporations has steadily
-              increased from 5.2% to 24.7%.
+              <span class="blue"
+                ><strong>increased from 5.2% to 24.7%</strong></span
+              >.
             </p>
           </div>
         {:else}
@@ -440,10 +580,16 @@
       {/key}
     </svelte:fragment>
   </Scrolly>
-  <div style="height:50vh; text-align:center">
-    <p style="font-size: 30px">
+  <div
+    style="height:50vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align:center"
+  >
+    <p style="font-size: 30px; width:60%">
       Over time, Tim would faces increasing rent prices and worsening facilities
-      from unsympathetic corporate landlords who only prioritize profit.
+      from <span class="blue"
+        ><strong
+          >unsympathetic corporate landlords who only prioritize profit</strong
+        ></span
+      >.
     </p>
   </div>
 
@@ -491,34 +637,37 @@
         src="3dmap.html"
         title="3-D map"
         class="w-full h-full border-0"
-        style="width:100%; height: 71%; border-width:0px"
+        style="width:100%; height: 95%; border-width:0px"
       />
     </svelte:fragment>
-    <div style="height: 300vh;">
+    <div style="height: 300vh; width: 100%">
       <div class="viz2">
-        {#if mapYear >= 2005 && mapYear <= 2008}
+        {#if mapYear >= 2009 && mapYear <= 2011}
           <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
+            style="background-color: #F8F1E5; width: 95%; outline: 2px solid black; display:flex; justify-content:center"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
+            <p class="visual_caption" in:fade>
               The trend of increasing corporate ownership also parallels the
               increase in the average median housing prices from 2004 to 2024.
-              Just as the corporate ownership rate in Boston increased from 5.2%
-              to 25%, the median house price in Boston increased from $314,532
-              to $659,616.71.
+              Just as the
+              <span class="blue"
+                ><strong
+                  >corporate ownership rate in Boston increased from 5.2% to 25%</strong
+                ></span
+              >, the
+              <span class="blue"
+                ><strong
+                  >median house price in Boston increased from $314,532 to
+                  $659,616.71</strong
+                ></span
+              >.
             </p>
           </div>
-        {:else if mapYear >= 2009 && mapYear <= 2015}
+        {:else if mapYear >= 2012 && mapYear <= 2015}
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
+            <p class="visual_caption" in:fade>
               The influx of corporations in residents affects Boston’s
               neighborhoods unequally. In 2024, East Boston, South Boston, and
               Fenway are among the neighborhoods with the highest percentage of
@@ -529,10 +678,7 @@
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
+            <p class="visual_caption" in:fade>
               This has undoubtedly also led to unequal impact on different
               communities in Boston, as lower-income residents are gradually
               being priced out of their homes by new corporate presences in
@@ -543,15 +689,15 @@
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
-              Not only would this increase in corporate ownership of real estate
-              throughout the Boston area affect Tim’s rent prices and
-              facilities, but this would also affect Tim’s ability to afford
-              living in specific neighborhoods, and Tim’s future goals of buying
-              a house.
+            <p class="visual_caption" in:fade>
+              This increase affects not only rent prices and facilities, but
+              also one's ability to afford living in specific neighborhoods, and
+              any future goals of buying a house.
+            </p>
+            <p style="font-size:14px">
+              <em
+                >Note: Median House Price for 2023 and 2024 was not available.</em
+              >
             </p>
           </div>
         {:else}
@@ -566,21 +712,26 @@
     style="display: flex; justify-content: center; align-items: center; font-size: 30px; padding: 2em 4em; height: 100vh; text-align: center; gap: 50px"
   >
     <img
-      src={images.timAngry}
+      src={images.worried}
       alt="Guy holding up a house thats heavy"
-      style="width: 500px; object-fit: cover; border-radius: 50%"
+      style="max-width: 400px; width: 400px; object-fit: cover"
     />
     <div>
       <p>
-        Buying a home has become increasingly unattainable. For someone like
-        Tim, fresh out of college and looking to build a future, the dream of
-        homeownership is slipping out of reach.
+        Buying and retaining a home has become <span class="red"
+          ><strong>increasingly unattainable</strong></span
+        >. For someone like Tim and
+        <span class="red"
+          ><strong>the dream of homeownership is slipping out of reach</strong
+          ></span
+        >.
       </p>
       <p>
-        But it isn't just would-be homeowners who are feeling this strain. As
-        corporate landlords tighten their grip, rents climbed in lockstep with
-        property values — turning even modest apartments into luxuries reserved
-        for the highest bidders.
+        As
+        <span class="blue"
+          ><strong>corporate landlords tighten their grip</strong></span
+        >, rents climbed in lockstep with property values — turning even modest
+        apartments into luxuries reserved for the highest bidders.
       </p>
       <p>
         Next, we’ll follow the trajectory of Boston’s rental market, and see how
@@ -590,23 +741,31 @@
   </div>
 
   <!-- VISUAL 3 -->
-  <h1>Boston Rent change over time</h1>
-  <!-- <House data={[rent_data[15]]} /> -->
   <Scrolly bind:progress={rentProgress} --scrolly-layout="overlap">
+    <h1
+      style="
+    position: sticky;
+    top: 0;
+    padding: 0.5em 1em;
+    margin: 0;
+    font-size:30px;
+    z-index: 1000;
+  "
+    >
+      Boston Rent change over time
+    </h1>
     <svelte:fragment slot="viz">
-      <House data={visibleRentData} />
+      <div style="transform: scale(1.2); transform-origin: top center;">
+        <House data={visibleRentData} />
+      </div>
     </svelte:fragment>
-    <!-- <div style="height: 300vh" /> -->
     <div style="height: 300vh;">
-      <div class="viz2" style="bottom:20%">
-        {#if visibleRentData.length > 1 && visibleRentData.length <= 5}
+      <div class="viz2" style="bottom:2%">
+        {#if visibleRentData.length > 4 && visibleRentData.length <= 5}
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
+            <p class="visual_caption" in:fade>
               For generations, homeownership was seen as the cornerstone of the
               American Dream. A symbol of financial stability and a path towards
               building generational wealth. But in Boston, that dream seems to
@@ -617,10 +776,7 @@
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
+            <p class="visual_caption" in:fade>
               Above is a graph of the CPI Owners Equivalent Rent for Boston over
               time, measuring how much homeowners would pay if they had to rent
               their own homes. Essentially this is another way to track the
@@ -631,10 +787,7 @@
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
+            <p class="visual_caption" in:fade>
               In Boston, where corporate ownership of housing has been rising
               dramatically over the last twenty years, these rent increases
               aren’t just abstract numbers. They represent the real pressure on
@@ -646,14 +799,19 @@
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
-            <p
-              style="font-size: 24px; padding-left: 5em; padding-right: 5em"
-              in:fade
-            >
+            <p class="visual_caption" in:fade>
               These trends set the stage for the rest of our story as rent eats
-              up a larger share of income, corporate landlords tighten their
-              grip on the markets and evictions rise and communities are pushed
-              out.
+              up a larger share of income, <span class="blue"
+                ><strong
+                  >corporate landlords expand their control over the housing
+                  market</strong
+                ></span
+              >
+              and
+              <span class="red"><strong>evictions rise</strong></span> and
+              <span class="red"
+                ><strong>communities are pushed out</strong></span
+              >.
             </p>
           </div>
         {:else}
@@ -661,11 +819,6 @@
         {/if}
       </div>
     </div>
-    <!-- <div style="height: 300vh;">
-      {#each rent_data as d}
-        <p>{d.year}: Rent ${d.rent}</p>
-      {/each}
-    </div> -->
   </Scrolly>
 
   <!-- TRANSITION TO VISUAL 4-->
@@ -673,21 +826,26 @@
     style="display: flex; justify-content: center; align-items: center; padding: 4em; height: 100vh; gap: 100px;"
   >
     <img
-      src={images.timDreams}
+      src={images.rent}
       alt="Guy holding up a house that's heavy"
-      style="width: 500px; max-width: 40vw; object-fit: cover; border-radius: 25%;"
+      style="max-width: 400px; width: 400px; max-width: 40vw; object-fit: cover; border-radius: 25%;"
     />
     <div style="max-width: 800px; font-size: 28px; text-align: center;">
       <p>
-        Year after year, the rent burden grows heavier. What once was an
-        affordable cost of living has now become a monthly scramble — a
-        desperate juggling act between rent, groceries, healthcare, and savings.
+        Year after year, <span class="red"
+          ><strong>the rent burden grows heavier</strong></span
+        >. What once was an affordable cost of living has now become a monthly
+        scramble — a desperate juggling act between rent, groceries, healthcare,
+        and savings.
       </p>
       <p>
         For Tim and countless others, it's not just about paying more: it's
-        about the increasing sacrfice. Dreams of owning a home, starting a
-        family, or even saving for emergencies are beginning to fade into the
-        background.
+        about the
+        <span class="red"><strong>increasing sacrfice</strong></span>. Dreams of
+        owning a home, starting a family, or even saving for emergencies are
+        <span class="red"
+          ><strong>beginning to fade into the background</strong></span
+        >.
       </p>
       <p>
         But we need to dive deeper to understand this sacrifice. Let's look into
@@ -697,51 +855,79 @@
   </div>
 
   <!-- VISUAL 4 -->
-  <h1>Rent v. Income</h1>
   <Scrolly bind:progress={walletProgress} --scrolly-layout="overlap">
+    <h1
+      style="
+    position: sticky;
+    top: 0;
+    padding: 0.5em 1em;
+    margin: 0;
+    font-size:30px;
+    z-index: 1000;
+  "
+    >
+      Rent v. Income
+    </h1>
     <svelte:fragment slot="viz">
-      <Wallet selectedYear={Math.round(walletYearScale(walletProgress))} />
+      <div style="transform: scale(1.2); transform-origin: top left;">
+        <Wallet selectedYear={Math.round(walletYearScale(walletProgress))} />
+      </div>
     </svelte:fragment>
-    <div style="height: 300vh; font-size:30px; width: 20vw">
+    <div style="height: 300vh; width: 20vw">
       <div class="viz3">
-        {#if walletYear >= 2006 && walletYear <= 2009}
+        {#if walletYear >= 2009 && walletYear <= 2011}
           <div
             style="background-color: #F8F1E5; width: 100%; outline: 2px solid black; padding:10px"
           >
-            <p in:fade>
+            <p class="visual_caption" in:fade>
               According to NerdWallet and other financial websites, you should
-              spend no more than thirty percent of your income to pay rent.
+              spend no more than <span class="blue"
+                ><strong>thirty percent of your income to pay rent</strong
+                ></span
+              >.
+            </p>
+            <p style="font-size:14px">
+              <em
+                >Note: This is represented by the
+                <span class="red"><strong>red dotted line</strong></span> in the
+                graph.</em
+              >
             </p>
           </div>
-        {:else if walletYear >= 2010 && walletYear <= 2013}
+        {:else if walletYear >= 2012 && walletYear <= 2014}
           <div
             style="background-color: #F8F1E5; width: 100%; outline: 2px solid black; padding:10px"
           >
-            <p in:fade>
+            <p class="visual_caption" in:fade>
               As shown in this wallet visualization and line graph, we can see
-              how the rent prices pass the 30% threshold, the critical turning
-              point.
+              how the rent prices
+              <span class="blue"><strong>pass the 30% threshold</strong></span>,
+              the critical turning point.
             </p>
           </div>
-        {:else if walletYear >= 2014 && walletYear <= 2018}
+        {:else if walletYear >= 2015 && walletYear <= 2016}
           <div
             style="background-color: #F8F1E5; width: 100%; outline: 2px solid black; padding:10px"
           >
-            <p in:fade>
-              The increase from 25% to 30% in fifteen years in Boston has been a
-              constant increase that shows an affordability gap and if nothing
-              is done, it will continue to grow.
+            <p class="visual_caption" in:fade>
+              The
+              <span class="blue"><strong>increase from 25% to 30%</strong></span
+              > in fifteen years in Boston has been a constant increase that shows
+              an affordability gap and if nothing is done, it will continue to grow.
             </p>
           </div>
-        {:else if walletYear >= 2019 && walletYear <= 2020}
+        {:else if walletYear >= 2017 && walletYear <= 2020}
           <div
-            style="background-color: #F8F1E5; width: 100%; outline: 2px solid black; padding:10px"
+            style="background-color: #F8F1E5; width: 100%; outline: 2px solid black; padding:10px; "
           >
-            <p in:fade>
-              When reaching the critical turning point, many residents are not
-              able to get basic needs covered since they need to use their money
-              to pay rent. The other common case is that residents stop paying
-              rent which leads to evictions.
+            <p class="visual_caption" in:fade>
+              When reaching the critical turning point, many residents are
+              <span class="red"
+                ><strong>not able to get basic needs covered</strong></span
+              >
+              since they need to use their money to pay rent. This inability to pay
+              rent,
+              <span class="red"><strong>leads to evictions</strong></span>.
             </p>
           </div>
         {:else}
@@ -752,45 +938,75 @@
   </Scrolly>
 
   <!-- TRANSITION TO VISUAL 5-->
-  <div
-    style="display: flex; justify-content: center; align-items: center; padding: 4em; height: 100vh; gap: 100px;"
-  >
-    <img
-      src={images.timSad}
-      alt="Guy holding up a house that's heavy"
-      style="width: 500px; max-width: 40vw; object-fit: cover; border-radius: 50%;"
-    />
-    <div style="max-width: 800px; font-size: 28px; text-align: center;">
-      <p>
-        As rent devoures an ever-larger share of income, something's got to
-        give. For many Boston residents, the breaking point came when no amount
-        of cutting back could make ends meet.
-      </p>
-      <p>
-        <span style="color: #1D3557;"><strong>Missed Payments</strong></span>
-        turn into
-        <span style="color: #8B0000;"><strong>eviction notices</strong></span>.
-      </p>
-      <p>
-        <span style="color: #1D3557;"><strong>Lifelong residents</strong></span>
-        are
-        <span style="color: #8B0000;"><strong>uprooted</strong></span>.
-      </p>
-      <p>
-        <span style="color: #1D3557;"><strong>Entire communities</strong></span>
-        <span style="color: #8B0000;"><strong>frayed</strong></span>.
-      </p>
-      <p>
-        In the final part of our story, we’ll witness how the housing
-        affordability crisis has transformed itself into an eviction crisis —
-        reshaping the face of Boston itself.
-      </p>
+  <Scrolly bind:progress={transitionProgress} --scrolly-layout="overlap">
+    <div
+      style="display: flex; justify-content: center; align-items: center; padding: 4em; height: 100vh; gap: 100px;"
+    >
+      <img
+        src={images.frayed}
+        alt="Guy holding up a house that's heavy"
+        style="max-width: 600px; width: 600px; max-width: 40vw; object-fit: cover; border-radius: 5%; position: absolute; left: 5%"
+      />
+      <div
+        style="max-width: 800px; font-size: 24px; text-align: center; height: 80%;"
+      >
+        <p style="position:absolute; top: 28%">
+          As rent devoures an ever-larger share of income, something's got to
+          give. For many Boston residents, the breaking point came when no
+          amount of cutting back could make ends meet.
+        </p>
+        {#if transitionProgress > 15}
+          <p
+            in:fade={{ duration: 800 }}
+            style="width:60%; position: absolute; top: 40%; left: 45%"
+          >
+            Missed Payments turn into
+            <span style="color: #8B0000;"
+              ><strong>eviction notices</strong></span
+            >.
+          </p>
+        {/if}
+        {#if transitionProgress > 50}
+          <p
+            in:fade={{ duration: 800 }}
+            style="width:60%; position: absolute; top: 45%; left: 45%"
+          >
+            Lifelong residents are
+            <span style="color: #8B0000;"><strong>uprooted</strong></span>.
+          </p>
+        {/if}
+        {#if transitionProgress > 70}
+          <p
+            in:fade={{ duration: 800 }}
+            style="width:60%; position: absolute; top: 50%; left: 45%"
+          >
+            Entire communities
+            <span style="color: #8B0000;"><strong>frayed</strong></span>.
+          </p>
+        {/if}
+        <p style="width:40%; position: absolute; top: 55%; left: 55%">
+          In the final part of our story, we’ll witness how the housing
+          affordability crisis has transformed itself into an eviction crisis —
+          reshaping the face of Boston itself.
+        </p>
+      </div>
     </div>
-  </div>
+  </Scrolly>
 
   <!-- VISUAL 5 -->
-  <h1>Eviction</h1>
   <Scrolly bind:progress={evictionProgress} --scrolly-layout="overlap">
+    <h1
+      style="
+    position: sticky;
+    top: 0;
+    padding: 0.5em 1em;
+    margin: 0;
+    font-size:30px;
+    z-index: 1000;
+  "
+    >
+      Eviction Over Time in Boston Neighborhoods
+    </h1>
     <!-- viz slot -->
     <svelte:fragment slot="viz">
       <iframe
@@ -802,45 +1018,61 @@
         style="width:100%; height: 85%; border-width:0px"
       />
     </svelte:fragment>
-    <div style="height: 300vh;">
-      <div class="viz2">
-        {#if evictionMapYear == 2021}
+    <div style="height: 200vh;">
+      <div class="viz2" style="bottom:5%">
+        {#if evictionProgress > 30 && evictionProgress < 44}
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black; font-size: 20px;"
           >
-            <p style="padding-left: 2em; padding-right: 2em" in:fade>
+            <p class="visual_caption" in:fade>
               By 2019 cracks are already forming in Boston’s housing system, but
               it was the sharp turn between 2019 and 2020 that revealed how
               fragile things had become.
             </p>
-            <p style="padding-left: 2em; padding-right: 2em" in:fade>
+            <p class="visual_caption" in:fade>
               When the pandemic hit, millions struggled to pay rent. Although
-              emergency protections tried to aid people, once those protections
-              expired during mid 2021, the eviction filings drastically
-              increased. In Boston specifically, they only grew worse.
+              emergency protections tried to aid people, once those
+              <span class="blue"
+                ><strong>protections expired during mid 2021</strong></span
+              >, the
+              <span class="red"
+                ><strong>eviction filings drastically increased</strong></span
+              >. In Boston specifically, they only grew worse.
             </p>
           </div>
-        {:else if evictionMapYear == 2022}
+        {:else if evictionProgress > 45 && evictionProgress < 64}
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black; font-size: 20px;"
           >
-            <p style="padding-left: 5em; padding-right: 5em" in:fade>
-              Today, eviction filings average over 3,000 cases a month which is
-              more than 15% higher than pre-pandemic levels. In Boston, eviction
-              rates tied to non-payment of rent surged dramatically.
+            <p class="visual_caption" in:fade>
+              Today,
+              <span class="blue"
+                ><strong
+                  >eviction filings average over 3,000 cases a month</strong
+                ></span
+              >
+              which is more than
+              <span class="blue"
+                ><strong>15% higher than pre-pandemic levels</strong></span
+              >. In Boston, eviction rates tied to non-payment of rent surged
+              dramatically.
             </p>
-            <p style="padding-left: 5em; padding-right: 5em" in:fade>
+            <p class="visual_caption" in:fade>
               The COVID-era protections may have ended, but their removal
-              exposed deeper, ongoing wounds in Boston’s housing fabric: rising
-              rents, stagnant wages, and corporate landlords tightening their
-              grip.
+              exposed deeper, ongoing wounds in Boston’s housing fabric:
+              <span class="blue"
+                ><strong
+                  >rising rents, stagnant wages, and the growing influence of
+                  corporate landlords</strong
+                ></span
+              >.
             </p>
           </div>
-        {:else if evictionMapYear == 2023}
+        {:else if evictionProgress > 65 && evictionProgress < 84}
           <div
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black; font-size: 20px;"
           >
-            <p style="padding-left: 5em; padding-right: 5em" in:fade>
+            <p class="visual_caption" in:fade>
               The pie chart highlights this human cost: the majority of
               evictions today are due to missed rent payments. And the 3D map
               visualizes how eviction rates due to rent issues have spread
@@ -855,25 +1087,29 @@
     </div>
   </Scrolly>
 
-  <div style="height:100vh; font-size: 30px; text-align:center">
+  <div
+    style="display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 30px; text-align: center; gap: 50px"
+  >
     <img
       src={images.housing2}
       alt="People wearing masks"
-      style="width: 600px; object-fit: cover; border-radius: 25%;"
+      style="max-height: 600px; height: 600px; object-fit: cover; border-radius: 25%;"
     />
-    <p>These aren’t isolated cases. They are the</p>
-    <p>
-      <span style="color: #1D3557;"><strong>predictable</strong></span>
-      and <span style="color: #1D3557;"><strong>preventable</strong></span>
-    </p>
-    <p>consequences of a system where</p>
-    <p>
-      <span style="color: #8B0000;"
-        ><strong
-          >housing is treated more as a commodity than a human right</strong
-        ></span
-      >
-    </p>
+    <div>
+      <p>These aren’t isolated cases. They are the</p>
+      <p>
+        <span style="color: #1D3557;"><strong>predictable</strong></span>
+        and <span style="color: #1D3557;"><strong>preventable</strong></span>
+      </p>
+      <p>consequences of a system where</p>
+      <p>
+        <span style="color: #8B0000;"
+          ><strong
+            >housing is treated more as a commodity than a human right</strong
+          ></span
+        >
+      </p>
+    </div>
   </div>
 
   <!-- CALL TO ACTION -->
@@ -888,79 +1124,148 @@
       <p>Boston faces two choices:</p>
       <p>Will we allow profit to eclipse people?</p>
       <p>
-        Or will we fight to rebuild a city where stability, dignity, and
-        homeownership are within reach for everyone?
+        Or will we <span class="red"><strong>fight to rebuild</strong></span> a city
+        where stability, dignity, and homeownership are within reach for everyone?
       </p>
     </div>
     <img
       src={images.fight}
       alt="eviction notice"
-      style="width: 500px; object-fit: cover; border-radius: 15%;"
+      style="max-width: 500px; width: 500px; object-fit: cover; border-radius: 15%;"
     />
   </div>
 
   <div
-    style="height: 150vh; align-items: center; gap: 20px; text-align: center;"
+    style="height: 310vh; align-items: center; gap: 20px; text-align: center;"
   >
     <div
-      style="position: relative; height: 150vh; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; font-size:30px"
+      style="position: relative; height: 110vh; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; font-size:30px;"
     >
       <!-- Main centered image -->
       <img
         src={images.bostonArt}
         alt="eviction notice"
-        style="width: 800px; object-fit: cover; border-radius: 15%;"
+        style="max-width: 800px; width: 800px; object-fit: cover; border-radius: 15%;"
       />
 
       <!-- Paragraphs -->
       <div>
-        <p>It's not too late -- but action is urgent</p>
         <p>
-          <span style="color: #1D3557;"
-            ><strong>Advocate for stronger tenant protections.</strong></span
+          <span class="red"
+            ><strong>It's not too late -- but action is urgent</strong></span
           >
-        </p>
-        <p>
-          <span style="color: #1D3557;"
-            ><strong>Support affordable housing initiatives.</strong></span
-          >
-        </p>
-        <p>
-          <span style="color: #1D3557;"
-            ><strong>Hold corporate landlords accountable.</strong></span
-          >
-        </p>
-
-        <p>
-          Reimagine housing not as a financial asset, but as a foundation for
-          thriving lives.
         </p>
         <p>
           A home should be a place to dream, not a battleground for survival.
         </p>
         <p>The future of Boston depends on it.</p>
       </div>
+    </div>
+    <!-- Actionables -->
+    <div
+      style="position: relative; height: 110vh; flex-direction: column; align-items: center; gap: 20px; text-align: center; font-size:30px;"
+    >
+      <h2>What can you do?</h2>
 
-      <!-- Bottom-left image -->
-      <img
-        src={images.timHappy}
-        alt="small supportive graphic"
-        style="
-      position: absolute;
-      bottom: 0;
-      left: 10px;
-      width: 300px;
-      object-fit: cover;
-      border-radius: 50%;
-    "
-      />
+      <h3>
+        <span class="blue">
+          <strong>Advocate for stronger tenant protections.</strong>
+        </span>
+      </h3>
+      <p>
+        <a href="https://www.clvu.org" target="_blank" style="color: #1D3557;"
+          >Join City Life/Vida Urbana</a
+        > – a grassroots group fighting evictions in Boston.
+      </p>
+      <p>
+        <a
+          href="https://www.boston.gov/departments/city-council"
+          target="_blank"
+          style="color: #1D3557;">Contact your City Councilor</a
+        > to support rent stabilization and right-to-counsel legislation.
+      </p>
+
+      <h3>
+        <span class="blue">
+          <strong>Support affordable housing initiatives.</strong>
+        </span>
+      </h3>
+      <p>
+        <a
+          href="https://www.bostonhousing.org"
+          target="_blank"
+          style="color: #1D3557;">Volunteer with Boston Housing Authority</a
+        > to support low-income tenants.
+      </p>
+      <p>
+        <a
+          href="https://www.mahahome.org"
+          target="_blank"
+          style="color: #1D3557;">Support MAHA</a
+        > to expand affordable homeownership opportunities in Boston.
+      </p>
+
+      <h3>
+        <span class="blue">
+          <strong>Hold corporate landlords accountable.</strong>
+        </span>
+      </h3>
+      <p>
+        <a
+          href="https://beta.boston.gov/departments/innovation-and-technology/lookup-property-owner"
+          target="_blank"
+          style="color: #1D3557;">Look up who owns what in Boston</a
+        > to identify and pressure corporate landlords.
+      </p>
+      <p>
+        Support transparency efforts like rental registries and <em
+          >Just Cause Eviction</em
+        > legislation.
+      </p>
+    </div>
+    <!-- Ending -->
+    <div
+      style="position: relative; height: 80vh; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; font-size:30px; padding-bottom: 20px; background: #FFF8DC; border: 5px solid white;"
+    >
+      <h2>A Big Thank You To..!</h2>
+      <p style="width: 60%">
+        This project was developed with guidance and feedback from the
+        <a href="https://www.mapc.org/">Metropolitan Area Planning Commission</a
+        > (MAPC).
+      </p>
+      <p style="width: 60%">
+        We are also grateful to the MIT Vis & Society staffs and students that
+        provide valuable feedback.
+      </p>
+      <p style="width: 80%">
+        Data source: MAPC, USA IPUMS, US Census, Property Assessment Data for
+        the City of Boston, Boston Neighborhood Boundaries Approximated by 2020
+        Census Block Groups, Block Group Census for Boston.
+      </p>
     </div>
   </div>
 </body>
 
 <style>
+  .blue {
+    color: #1d3557;
+  }
+  .red {
+    color: #8b0000;
+  }
+  .visual_caption {
+    font-size: 24px;
+    padding-left: 1em;
+    padding-right: 1em;
+  }
+  * {
+    /* outline: 1px solid red; */
+    box-sizing: border-box;
+  }
+  :global(html) {
+    overflow-x: clip;
+  }
   body {
-    /* background-color: #f8f1e5; */
     color: #000000;
     font-family: "Libre Franklin", sans-serif;
   }
@@ -968,7 +1273,7 @@
   h1,
   h2,
   h3 {
-    color: #8b0000;
+    color: #d5912f;
     font-family: "Merriweather", serif;
   }
 
@@ -984,8 +1289,10 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
     background-image: url("/images/houseBackground.jpeg");
     background-repeat: repeat;
     background-size: 400px 400px;
@@ -993,19 +1300,29 @@
     z-index: -1;
     pointer-events: none;
   }
+  .walker {
+    position: fixed;
+    bottom: 10%;
+    left: 10%;
+    width: 150px;
+    transition: transform 0.1s linear;
+    pointer-events: none;
+    z-index: 10;
+  }
   .viz2 {
     position: fixed;
-    bottom: 5%; /* a little off the bottom, tweak as you like */
-    left: 0;
-    width: 100%;
+    bottom: 1%;
+    left: 5%;
+    width: 90%;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
     text-align: center;
-    pointer-events: none; /* so you can still scroll through it */
+    pointer-events: none;
   }
   .viz3 {
+    max-width: 100vw;
     position: fixed;
     width: 20vw;
     bottom: 40%;
@@ -1015,7 +1332,7 @@
     justify-content: flex-end;
     align-items: center;
     text-align: center;
-    pointer-events: none; /* so you can still scroll through it */
+    pointer-events: none;
   }
   .video-wrapper {
     width: 500px;
@@ -1031,7 +1348,7 @@
   }
 
   .scrolling-text {
-    height: 200vh; /* Make it tall enough to scroll */
+    height: 200vh;
     width: 60%;
     margin: 0 auto;
     padding-top: 50vh;

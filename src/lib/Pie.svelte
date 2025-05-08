@@ -6,7 +6,7 @@
   export let data = [];
   export let year;
 
-  let arcGenerator = d3.arc().innerRadius(0).outerRadius(50);
+  let arcGenerator = d3.arc().innerRadius(0).outerRadius(70);
   let sliceGenerator = d3
     .pie()
     .sort(null)
@@ -26,65 +26,75 @@
     arcs = arcData.map((d) => arcGenerator(d));
   }
 
-  let showChart = true;
-  function toggleView() {
-    showChart = !showChart;
-    liveText = showChart ? "Pie chart view shown." : "Table view shown.";
-  }
-
-  let liveText = "";
-  function toggleWedge(index, event) {
-    if (!event.key || event.key === "Enter") {
-      if (selectedIndex === index) {
-        selectedIndex = -1;
-        liveText = `No projects selected.`;
-      } else {
-        selectedIndex = index;
-        const d = data[index];
-        liveText = `${d.label}: ${d.value} projects selected.`;
-      }
-    }
-  }
-
   $: description = `A pie chart showing project counts by year. ${data.map((d) => `${d.label}: ${d.value} projects`).join(", ")}.`;
+  function polarToCartesian(angle, radius) {
+    return [
+      Math.cos(angle - Math.PI / 2) * radius,
+      Math.sin(angle - Math.PI / 2) * radius,
+    ];
+  }
+  $: totalValue = data.reduce((acc, d) => acc + d.value, 0);
+  $: dataWithPercentages = data.map((d) => ({
+    ...d,
+    percentage: ((d.value / totalValue) * 100).toFixed(1),
+  }));
 </script>
 
 <div class="container">
   <svg
     viewBox="-50 -50 100 100"
+    preserveAspectRatio="xMidYMid meet"
     role="img"
     aria-labelledby="pie-title pie-desc"
   >
     <title id="pie-title">Rates</title>
     <desc id="pie-desc">{description}</desc>
-    <circle class="pie-outline" r="50" />
-    {#each arcs as arc, index}
-      <path
-        d={arc}
-        fill={colors(index)}
-        class:selected={selectedIndex === index}
-        on:click={(e) => toggleWedge(index, e)}
-        on:keyup={(e) => toggleWedge(index, e)}
-        tabindex="0"
-        role="button"
-      />
-    {/each}
+
+    <!-- Year label stays up here -->
+    <text
+      x="0"
+      y="-60"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      font-size="15"
+      font-weight="bold"
+      fill="black"
+    >
+      Year: {year}
+    </text>
+
+    <!-- Move all pie elements down -->
+    <g transform="translate(0, 45)">
+      <circle class="pie-outline" r="70" />
+      {#each arcData as d, index}
+        {@const angle = (d.startAngle + d.endAngle) / 2}
+        {@const arcSize = d.endAngle - d.startAngle}
+        {@const radius = arcSize < 1.2 ? 85 : 37}
+        {@const [x, y] = polarToCartesian(angle, radius)}
+        <path
+          d={arcGenerator(d)}
+          fill={colors(index)}
+          class:selected={selectedIndex === index}
+          tabindex="0"
+          role="button"
+        />
+        <text
+          {x}
+          {y}
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-size="9"
+          fill="black"
+          style="pointer-events: none;"
+        >
+          <tspan {x} dy="-0.3em">{dataWithPercentages[index].label}</tspan>
+          <tspan {x} dy="1.2em"
+            >({dataWithPercentages[index].percentage}%)</tspan
+          >
+        </text>
+      {/each}
+    </g>
   </svg>
-  <ul class="legend">
-    <p><strong>Current Year: {year}</strong></p>
-    {#each data as d, index}
-      <li
-        style="--color: {colors(
-          index
-        )}; display: flex; align-items: center; gap: 5px"
-        class:selected={selectedIndex === index}
-      >
-        <span class="swatch"></span>
-        {d.label} <em>({d.value.toFixed(4)})</em>
-      </li>
-    {/each}
-  </ul>
-  <p aria-live="polite" class="sr-only">{liveText}</p>
 </div>
 
 <style>
@@ -101,11 +111,6 @@
     /* Do not clip shapes outside the viewBox */
     overflow: visible;
   }
-  svg:hover path:not(:hover),
-  svg:focus-within path:not(:focus-visible) {
-    opacity: 50%;
-  }
-
   path:focus-visible {
     opacity: 100% !important;
     stroke: white;
@@ -116,9 +121,6 @@
     transition: 300ms;
     cursor: pointer;
     outline: none;
-  }
-  path:hover {
-    opacity: 100% !important;
   }
   .selected {
     --color: oklch(60% 45% 0) !important;
@@ -131,36 +133,10 @@
       color: var(--color);
     }
   }
-
-  ul:has(.selected) li:not(.selected) {
-    color: gray;
-  }
-
-  .swatch {
-    display: inline-block;
-    background-color: var(--color);
-    height: 10px;
-    width: 10px;
-    border-radius: 50%;
-  }
-  .legend {
-    display: grid;
-    gap: 10px;
-    flex: 1;
-    min-width: 250px;
-    padding: 10px;
-    border: 1px solid black;
-  }
   .container {
     display: flex;
-    gap: 50px;
+    justify-content: center;
     align-items: center;
-  }
-  .sr-only {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
+    padding: 2em;
   }
 </style>

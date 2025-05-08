@@ -307,9 +307,6 @@
   </ul>
 </div>
 
-<!-- <input type="range" min="2005" max="2021" bind:value={selectedYear} step="1" />
-Selected Year: {selectedYear} -->
-
 <style>
   .page-container {
     display: flex;
@@ -372,7 +369,7 @@ Selected Year: {selectedYear} -->
   .legend p {
     margin: 0 0 5px 0;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 24px;
   }
 
   .legend li {
@@ -380,7 +377,7 @@ Selected Year: {selectedYear} -->
     align-items: center;
     gap: 5px;
     margin-bottom: 5px;
-    font-size: 12px;
+    font-size: 18px;
   }
 
   .swatch {
