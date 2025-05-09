@@ -693,9 +693,65 @@
         class="w-full h-full border-0"
         style="width:100%; height: 95%; border-width:0px"
       />
+
+      <div class="viz2 corp-text">
+        {#if mapYear >= 2009 && mapYear <= 2011}
+          <div class="visual_caption">
+            <p in:fade>
+              The trend of increasing corporate ownership also parallels the
+              increase in the average median housing prices from 2004 to 2024.
+              Just as the
+              <span class="highlight"
+                ><strong
+                  >corporate ownership rate in Boston increased from 5.2% to 25%</strong
+                ></span
+              >, the
+              <span class="highlight"
+                ><strong
+                  >median house price in Boston increased from $314,532 to
+                  $659,616.71</strong
+                ></span
+              >.
+            </p>
+          </div>
+        {:else if mapYear >= 2012 && mapYear <= 2015}
+          <div class="visual_caption">
+            <p in:fade>
+              The influx of corporations in residents affects Boston’s
+              neighborhoods unequally. In 2024, East Boston, South Boston, and
+              Fenway are among the neighborhoods with the highest percentage of
+              real estate owned by corporations
+            </p>
+          </div>
+        {:else if mapYear >= 2016 && mapYear <= 2018}
+          <div class="visual_caption">
+            <p in:fade>
+              This has undoubtedly also led to unequal impact on different
+              communities in Boston, as lower-income residents are gradually
+              being priced out of their homes by new corporate presences in
+              their neighborhoods.
+            </p>
+          </div>
+        {:else if mapYear >= 2019 && mapYear <= 2023}
+          <div class="visual_caption">
+            <p in:fade>
+              This increase affects not only rent prices and facilities, but
+              also one's ability to afford living in specific neighborhoods, and
+              any future goals of buying a house.
+            </p>
+            <p class="small-corp-text">
+              <em
+                >Note: Median House Price for 2023 and 2024 was not available.</em
+              >
+            </p>
+          </div>
+        {:else}
+          <p></p>
+        {/if}
+      </div>
     </svelte:fragment>
     <div style="height: 300vh; width: 100%">
-      <div class="viz2">
+      <!-- <div class="viz2">
         {#if mapYear >= 2009 && mapYear <= 2011}
           <div
             class="corp-text"
@@ -761,7 +817,7 @@
         {:else}
           <p></p>
         {/if}
-      </div>
+      </div> -->
     </div>
   </Scrolly>
 
@@ -1464,37 +1520,27 @@
 
   .corp-text {
     /* max-height: 10%; */
-    height: 10vh;
+    /* height: 10vh; */
+    height: 100px;
   }
 
   .corp-text .visual_caption {
     font-size: 100%;
     padding-left: 1em;
     padding-right: 1em;
+    background-color: #f8f1e5;
+    width: 95%;
+    outline: 2px solid black;
+    display: flex;
+    justify-content: center;
+    height: 80%;
+    /* margin-top: 20px; */
+    flex-direction: column;
   }
 
   .small-corp-text {
-    font-size: 5%;
+    font-size: 10%;
+    /* position: fixed; */
+    /* margin-bottom: 20px */
   }
-
-  /* @media screen and (min-width: 768px) {
-    .corp-text {
-      background-color: blue !important;
-      font-size: 10px;
-    }
-  }
-
-  @media screen and (min-width: 1024px) {
-    .corp-text {
-      background-color: yellow !important;
-      font-size: 10px;
-    }
-  }
-
-  @media screen and (min-width: 1440px) {
-    .corp-text {
-      background-color: purple !important;
-      font-size: 5px;
-    }
-  } */
 </style>
