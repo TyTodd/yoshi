@@ -685,69 +685,74 @@
     </h1>
     <!-- viz slot -->
     <svelte:fragment slot="viz">
-      <iframe
-        bind:this={frame}
-        on:load={handleLoad}
-        src="3dmap.html"
-        title="3-D map"
-        class="w-full h-full border-0"
-        style="width:100%; height: 95%; border-width:0px"
-      />
-
-      <div class="viz2 corp-text">
-        {#if mapYear >= 2009 && mapYear <= 2011}
-          <div class="visual_caption">
-            <p in:fade>
-              The trend of increasing corporate ownership also parallels the
-              increase in the average median housing prices from 2004 to 2024.
-              Just as the
-              <span class="highlight"
-                ><strong
-                  >corporate ownership rate in Boston increased from 5.2% to 25%</strong
-                ></span
-              >, the
-              <span class="highlight"
-                ><strong
-                  >median house price in Boston increased from $314,532 to
-                  $659,616.71</strong
-                ></span
-              >.
-            </p>
-          </div>
-        {:else if mapYear >= 2012 && mapYear <= 2015}
-          <div class="visual_caption">
-            <p in:fade>
-              The influx of corporations in residents affects Boston’s
-              neighborhoods unequally. In 2024, East Boston, South Boston, and
-              Fenway are among the neighborhoods with the highest percentage of
-              real estate owned by corporations
-            </p>
-          </div>
-        {:else if mapYear >= 2016 && mapYear <= 2018}
-          <div class="visual_caption">
-            <p in:fade>
-              This has undoubtedly also led to unequal impact on different
-              communities in Boston, as lower-income residents are gradually
-              being priced out of their homes by new corporate presences in
-              their neighborhoods.
-            </p>
-          </div>
-        {:else if mapYear >= 2019 && mapYear <= 2023}
-          <div class="visual_caption">
-            <p in:fade>
-              This increase affects not only rent prices and facilities, but
-              also one's ability to afford living in specific neighborhoods, and
-              any future goals of buying a house.
-            </p>
-            <p class="small-corp-text">
-              <em
-                >Note: Median House Price for 2023 and 2024 was not available.</em
-              >
-            </p>
-          </div>
-        {:else}
-          <p></p>
-        {/if}
+      <div style="height: 100vh; display:flex; flex-direction: column;">
+        <div
+          style="width: 100%; height: 80%; overflow: hidden; position: relative;"
+        >
+          <iframe
+            bind:this={frame}
+            on:load={handleLoad}
+            src="3dmap.html"
+            title="3-D map"
+            style="position: absolute; width: 95vw; height: 100vh; border: none;"
+          />
+        </div>
+        <div class="corp-text">
+          {#if mapYear >= 2009 && mapYear <= 2011}
+            <div class="visual_caption">
+              <p in:fade>
+                The trend of increasing corporate ownership also parallels the
+                increase in the average median housing prices from 2004 to 2024.
+                Just as the
+                <span class="highlight"
+                  ><strong
+                    >corporate ownership rate in Boston increased from 5.2% to
+                    25%</strong
+                  ></span
+                >, the
+                <span class="highlight"
+                  ><strong
+                    >median house price in Boston increased from $314,532 to
+                    $659,616.71</strong
+                  ></span
+                >.
+              </p>
+            </div>
+          {:else if mapYear >= 2012 && mapYear <= 2015}
+            <div class="visual_caption">
+              <p in:fade>
+                The influx of corporations in residents affects Boston’s
+                neighborhoods unequally. In 2024, East Boston, South Boston, and
+                Fenway are among the neighborhoods with the highest percentage
+                of real estate owned by corporations
+              </p>
+            </div>
+          {:else if mapYear >= 2016 && mapYear <= 2018}
+            <div class="visual_caption">
+              <p in:fade>
+                This has undoubtedly also led to unequal impact on different
+                communities in Boston, as lower-income residents are gradually
+                being priced out of their homes by new corporate presences in
+                their neighborhoods.
+              </p>
+            </div>
+          {:else if mapYear >= 2019 && mapYear <= 2023}
+            <div class="visual_caption">
+              <p in:fade>
+                This increase affects not only rent prices and facilities, but
+                also one's ability to afford living in specific neighborhoods,
+                and any future goals of buying a house.
+              </p>
+              <p class="small-corp-text">
+                <em
+                  >Note: Median House Price for 2023 and 2024 was not available.</em
+                >
+              </p>
+            </div>
+          {:else}
+            <p></p>
+          {/if}
+        </div>
       </div>
     </svelte:fragment>
     <div style="height: 300vh; width: 100%">
@@ -1519,9 +1524,10 @@
   }
 
   .corp-text {
-    /* max-height: 10%; */
-    /* height: 10vh; */
-    height: 100px;
+    position: relative;
+    display: flex;
+    flex: 1;
+    justify-content: center;
   }
 
   .corp-text .visual_caption {
@@ -1533,9 +1539,11 @@
     outline: 2px solid black;
     display: flex;
     justify-content: center;
-    height: 80%;
-    /* margin-top: 20px; */
+    /* height: 70%; */
     flex-direction: column;
+    margin-top: 30px;
+    margin-bottom: 3%;
+    text-align: center;
   }
 
   .small-corp-text {
