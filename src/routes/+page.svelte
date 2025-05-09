@@ -698,7 +698,8 @@
       <div class="viz2">
         {#if mapYear >= 2009 && mapYear <= 2011}
           <div
-            style="background-color: #F8F1E5; width: 95%; outline: 2px solid black; display:flex; justify-content:center"
+            class="corp-text"
+            style="background-color: #F8F1E5; width: 95%; outline: 2px solid black; display:flex; justify-content:center;"
           >
             <p class="visual_caption" in:fade>
               The trend of increasing corporate ownership also parallels the
@@ -719,6 +720,7 @@
           </div>
         {:else if mapYear >= 2012 && mapYear <= 2015}
           <div
+            class="corp-text"
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
             <p class="visual_caption" in:fade>
@@ -730,6 +732,7 @@
           </div>
         {:else if mapYear >= 2016 && mapYear <= 2018}
           <div
+            class="corp-text"
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
             <p class="visual_caption" in:fade>
@@ -741,6 +744,7 @@
           </div>
         {:else if mapYear >= 2019 && mapYear <= 2023}
           <div
+            class="corp-text"
             style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
           >
             <p class="visual_caption" in:fade>
@@ -748,7 +752,7 @@
               also one's ability to afford living in specific neighborhoods, and
               any future goals of buying a house.
             </p>
-            <p style="font-size:14px">
+            <p class="small-corp-text">
               <em
                 >Note: Median House Price for 2023 and 2024 was not available.</em
               >
@@ -1457,4 +1461,40 @@
     font-size: 30px;
     text-align: center;
   }
+
+  .corp-text {
+    /* max-height: 10%; */
+    height: 10vh;
+  }
+
+  .corp-text .visual_caption {
+    font-size: 100%;
+    padding-left: 1em;
+    padding-right: 1em;
+  }
+
+  .small-corp-text {
+    font-size: 5%;
+  }
+
+  /* @media screen and (min-width: 768px) {
+    .corp-text {
+      background-color: blue !important;
+      font-size: 10px;
+    }
+  }
+
+  @media screen and (min-width: 1024px) {
+    .corp-text {
+      background-color: yellow !important;
+      font-size: 10px;
+    }
+  }
+
+  @media screen and (min-width: 1440px) {
+    .corp-text {
+      background-color: purple !important;
+      font-size: 5px;
+    }
+  } */
 </style>
