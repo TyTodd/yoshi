@@ -11,11 +11,12 @@
     .pie()
     .sort(null)
     .value((d) => d.value);
-  let colors = d3.scaleOrdinal(d3.schemeTableau10);
-  //   $: colors = d3
-  //     .scaleOrdinal()
-  //     .domain(data.map((_, i) => i))
-  //     .range(d3.quantize(d3.interpolateBlues, data.length));
+  // let colors = d3.scaleOrdinal(d3.schemeTableau10);
+  let colors = d3.scaleOrdinal([
+    "#d5912f", // Corporate Ownership
+    "#dd8d97", // Other 1
+    "#da8e71", // Other 2
+  ]);
 
   // Define arcData and arcs outside the reactive block
   let arcData;
@@ -53,7 +54,7 @@
     <!-- Year label stays up here -->
     <text
       x="0"
-      y="-60"
+      y="-40"
       text-anchor="middle"
       dominant-baseline="middle"
       font-size="15"
@@ -64,7 +65,7 @@
     </text>
 
     <!-- Move all pie elements down -->
-    <g transform="translate(0, 45)">
+    <g transform="translate(0, 70)">
       <circle class="pie-outline" r="70" />
       {#each arcData as d, index}
         {@const angle = (d.startAngle + d.endAngle) / 2}
@@ -74,6 +75,8 @@
         <path
           d={arcGenerator(d)}
           fill={colors(index)}
+          stroke="white"
+          stroke-width="2"
           class:selected={selectedIndex === index}
           tabindex="0"
           role="button"

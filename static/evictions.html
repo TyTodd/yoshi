@@ -74,7 +74,7 @@
       /* Tooltip ----------------------------------------------------------- */
       #tooltip {
         position: fixed;
-        bottom: 18%;
+        bottom: 23%;
         right: 25%;
         display: none;
         background: white;
@@ -113,11 +113,12 @@
         border: 1px solid #ccc;
         border-radius: 4px;
         background: linear-gradient(
-          to right,
-          #4593b6,
-          #77d8cc,
-          #f4ad62,
-          #c3424f
+          to left,
+          #f7d7b0,
+          #efb96e,
+          #e69b3b,
+          #d5912f,
+          #a66e20
         );
         margin-bottom: 6px;
       }
@@ -273,7 +274,12 @@
          *  Scales
          * ----------------------------------------------------------------*/
         /* --- Colour ramp (blue ▸ turquoise ▸ orange ▸ red) --- */
-        const COLOR_RAMP = ["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"];
+        const baseColor = d3.lab("#d5912f"); // Convert to perceptual color space
+
+        const COLOR_RAMP = d3
+          .range(0.2, 0.95, 0.15)
+          .map((l) => d3.lab(l * 100, baseColor.a, baseColor.b).formatHex());
+
         const colorScaleRent = d3
           .scaleLinear()
           .domain(
@@ -507,7 +513,8 @@
                 datasets: [
                   {
                     data: [rentIssuePercent, otherCausesPercent],
-                    backgroundColor: ["#c3424f", "#4593b6"],
+                    backgroundColor: ["#d5912f", "#dd8d97"],
+                    borderWidth: 5,
                   },
                 ],
               },
@@ -519,7 +526,7 @@
                 },
                 plugins: {
                   legend: {
-                    position: "bottom",
+                    display: false,
                   },
                   datalabels: {
                     color: "#fff",
@@ -530,12 +537,12 @@
                     },
                     font: {
                       weight: "bold",
-                      size: 14,
+                      size: 20,
                     },
                   },
                 },
               },
-              plugins: [ChartDataLabels], // 🔥 Register the plugin
+              plugins: [ChartDataLabels],
             });
           } else {
             // ✅ Just update the data and call .update()

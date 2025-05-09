@@ -88,7 +88,7 @@
       Z
     `;
       })
-      .attr("fill", "#ff7f0e");
+      .attr("fill", "#d5912f");
 
     // Draw income portion on top
     g.selectAll(".income")
@@ -122,7 +122,7 @@
     Z
   `;
       })
-      .attr("fill", "#69b3a2");
+      .attr("fill", "#dd8d97");
 
     // Update labels with fixed x position
     g.selectAll(".income-label")
@@ -134,7 +134,8 @@
       .attr("y", (d) => y(d.rent + d.income / 2) + 20)
       .attr("text-anchor", "middle")
       .attr("transform", `rotate(-15)`)
-      .text((d) => `$${Math.round(d.income).toLocaleString()}`)
+      .attr("font-size", "12px")
+      .text((d) => `Income: $${Math.round(d.income).toLocaleString()}`)
       .attr("fill", "white");
 
     // Update rent label with fixed x position
@@ -143,24 +144,13 @@
       .enter()
       .append("text")
       .attr("class", "rent-label")
-      .attr("x", barWidth / 2 - 30) // fixed position
+      .attr("x", barWidth / 2 - 40) // fixed position
       .attr("y", (d) => y(d.rent / 2) - 5)
       .attr("text-anchor", "middle")
       .attr("transform", `rotate(-19)`)
-      .text((d) => `$${Math.round(d.rent).toLocaleString()}`)
+      .attr("font-size", "12px")
+      .text((d) => `Rent: $${Math.round(d.rent).toLocaleString()}`)
       .attr("fill", "white");
-
-    // Update ratio label with fixed x position
-    // g.selectAll(".ratio-label")
-    //   .data(data)
-    //   .enter()
-    //   .append("text")
-    //   .attr("class", "ratio-label")
-    //   .attr("x", barWidth + 20) // fixed position
-    //   .attr("y", (d) => y(d.rent + d.income / 2) + slant / 2)
-    //   .attr("text-anchor", "start")
-    //   .text((d) => `${((d.rent / d.income) * 100).toFixed(1)}%`)
-    //   .attr("fill", "black");
   }
 
   // Create reactive statement for ratio chart
@@ -219,6 +209,23 @@
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "6,3");
 
+    /* X–axis label  */
+    g.append("text")
+      .attr("class", "axis-label")
+      .attr("text-anchor", "middle")
+      .attr("x", ratioWidth / 2)
+      .attr("y", ratioHeight + ratioMargin.bottom + 10) // a few px above the bottom edge
+      .text("Year");
+
+    /* Y–axis label */
+    g.append("text")
+      .attr("class", "axis-label")
+      .attr("text-anchor", "middle")
+      .attr("transform", `rotate(-90)`)
+      .attr("x", -ratioHeight / 2)
+      .attr("y", -ratioMargin.left - 10) // 14 ≈ label offset from ticks
+      .text("Rent to Income Ratio");
+
     // Add line
     const line = d3
       .line()
@@ -228,7 +235,7 @@
     g.append("path")
       .datum(ratioData)
       .attr("fill", "none")
-      .attr("stroke", "#69b3a2")
+      .attr("stroke", "#d5912f")
       .attr("stroke-width", 2)
       .attr("d", line);
 
@@ -237,7 +244,7 @@
       .attr("cx", x(selectedYear))
       .attr("cy", y(ratioData.find((d) => d.year === selectedYear).ratio))
       .attr("r", 6)
-      .attr("fill", "#ff7f0e");
+      .attr("fill", "#d5912f");
 
     // Add axes (simplified)
     g.append("g")
@@ -293,17 +300,23 @@
     </div>
 
     <div class="ratio-chart">
-      <svg bind:this={ratioSvg}></svg>
+      <svg
+        viewBox="0 0 400 300"
+        preserveAspectRatio="xMidYMid meet"
+        style="width: 100%; height: 100%"
+        bind:this={ratioSvg}
+      ></svg>
     </div>
   </div>
   <ul class="legend">
     <p><strong>Year: {selectedYear}</strong></p>
-    {#each incomeRentData as d, index}
-      <li style="--color: {d.color};">
-        <span class="swatch"></span>
-        {d.label}: <em>{d.value}</em>
-      </li>
-    {/each}
+    <div class="legend-items">
+      {#each incomeRentData as d, index}
+        <li style="--color: {d.color};">
+          {d.label}: {d.value}
+        </li>
+      {/each}
+    </div>
   </ul>
 </div>
 
@@ -324,23 +337,17 @@
     width: 100%;
   }
 
-  /* .layout-container {
-    display: flex;
-    flex-direction: row;
-    gap: 5rem;
-    align-items: center;
-    width: 100vw;
-  } */
-
   .visualization-container {
     position: relative;
     width: fit-content;
   }
 
   .ratio-chart {
-    width: 300px;
-    height: 100%;
+    margin-top: 80px;
+    width: 400px;
     display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .visualization-container svg {
@@ -357,27 +364,37 @@
   }
 
   .legend {
-    display: grid;
-    gap: 10px;
-    flex: 1;
-    min-width: 200px;
-    max-width: 200px;
+    position: absolute;
+    top: 4%;
+    right: 30%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px; /* space between the year label and the items */
     padding: 10px;
     border: 1px solid black;
+    background: white;
   }
 
   .legend p {
-    margin: 0 0 5px 0;
+    margin: 0;
     font-weight: bold;
-    font-size: 24px;
+    font-size: 12px;
+  }
+
+  .legend-items {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   .legend li {
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-bottom: 5px;
-    font-size: 18px;
+    font-size: 12px;
+    list-style: none;
   }
 
   .swatch {
