@@ -568,7 +568,7 @@
           </div>
         {:else if pieData[selectedYear]?.year >= 2016 && pieData[selectedYear]?.year <= 2020}
           <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
+            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black; margin-top: 100px;"
           >
             <p
               style="font-size: 24px; padding-left: 1em; padding-right: 1em"
@@ -738,7 +738,7 @@
             </div>
           {:else if mapYear >= 2019 && mapYear <= 2023}
             <div class="visual_caption">
-              <p in:fade>
+              <p class="visual_caption_text" in:fade>
                 This increase affects not only rent prices and facilities, but
                 also one's ability to afford living in specific neighborhoods,
                 and any future goals of buying a house.
@@ -755,75 +755,7 @@
         </div>
       </div>
     </svelte:fragment>
-    <div style="height: 300vh; width: 100%">
-      <!-- <div class="viz2">
-        {#if mapYear >= 2009 && mapYear <= 2011}
-          <div
-            class="corp-text"
-            style="background-color: #F8F1E5; width: 95%; outline: 2px solid black; display:flex; justify-content:center;"
-          >
-            <p class="visual_caption" in:fade>
-              The trend of increasing corporate ownership also parallels the
-              increase in the average median housing prices from 2004 to 2024.
-              Just as the
-              <span class="highlight"
-                ><strong
-                  >corporate ownership rate in Boston increased from 5.2% to 25%</strong
-                ></span
-              >, the
-              <span class="highlight"
-                ><strong
-                  >median house price in Boston increased from $314,532 to
-                  $659,616.71</strong
-                ></span
-              >.
-            </p>
-          </div>
-        {:else if mapYear >= 2012 && mapYear <= 2015}
-          <div
-            class="corp-text"
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
-          >
-            <p class="visual_caption" in:fade>
-              The influx of corporations in residents affects Boston’s
-              neighborhoods unequally. In 2024, East Boston, South Boston, and
-              Fenway are among the neighborhoods with the highest percentage of
-              real estate owned by corporations
-            </p>
-          </div>
-        {:else if mapYear >= 2016 && mapYear <= 2018}
-          <div
-            class="corp-text"
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
-          >
-            <p class="visual_caption" in:fade>
-              This has undoubtedly also led to unequal impact on different
-              communities in Boston, as lower-income residents are gradually
-              being priced out of their homes by new corporate presences in
-              their neighborhoods.
-            </p>
-          </div>
-        {:else if mapYear >= 2019 && mapYear <= 2023}
-          <div
-            class="corp-text"
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
-          >
-            <p class="visual_caption" in:fade>
-              This increase affects not only rent prices and facilities, but
-              also one's ability to afford living in specific neighborhoods, and
-              any future goals of buying a house.
-            </p>
-            <p class="small-corp-text">
-              <em
-                >Note: Median House Price for 2023 and 2024 was not available.</em
-              >
-            </p>
-          </div>
-        {:else}
-          <p></p>
-        {/if}
-      </div> -->
-    </div>
+    <div style="height: 300vh; width: 100%"></div>
   </Scrolly>
 
   <!-- TRANSITION TO VISUAL 3-->
@@ -874,74 +806,67 @@
       Boston Rent change over time
     </h1>
     <svelte:fragment slot="viz">
-      <div
-        style="transform: scale(1.1) translateY(50px); transform-origin: top center"
-      >
-        <House data={visibleRentData} />
+      <div style="height: 100vh; display:flex; flex-direction: column;">
+        <div
+          style="transform: scale(1.1) translateY(50px); transform-origin: top center"
+        >
+          <House data={visibleRentData} />
+        </div>
+        <div class="viz2" style="bottom:2%">
+          {#if visibleRentData.length > 4 && visibleRentData.length <= 5}
+            <div class="caption">
+              <p class="visual_caption" in:fade>
+                For generations, homeownership was seen as the cornerstone of
+                the American Dream. A symbol of financial stability and a path
+                towards building generational wealth. But in Boston, that dream
+                seems to be readily slipping out of reach.
+              </p>
+            </div>
+          {:else if visibleRentData.length > 5 && visibleRentData.length <= 9}
+            <div class="caption">
+              <p class="visual_caption" in:fade>
+                Above is a graph of the CPI Owners Equivalent Rent for Boston
+                over time, measuring how much homeowners would pay if they had
+                to rent their own homes. Essentially this is another way to
+                track the rising cost of simply having a roof over your head.
+              </p>
+            </div>
+          {:else if visibleRentData.length > 9 && visibleRentData.length <= 15}
+            <div class="caption">
+              <p class="visual_caption" in:fade>
+                In Boston, where corporate ownership of housing has been rising
+                dramatically over the last twenty years, these rent increases
+                aren’t just abstract numbers. They represent the real pressure
+                on real people – tenants like Tim, who are finding it harder
+                every year to save, move or dream about home ownership.
+              </p>
+            </div>
+          {:else if visibleRentData.length > 15 && visibleRentData.length <= 20}
+            <div class="caption">
+              <p class="visual_caption" in:fade>
+                These trends set the stage for the rest of our story as rent
+                eats up a larger share of income, <span class="highlight"
+                  ><strong
+                    >corporate landlords expand their control over the housing
+                    market</strong
+                  ></span
+                >
+                and
+                <span class="highlight"><strong>evictions rise</strong></span>
+                and
+                <span class="highlight"
+                  ><strong>communities are pushed out</strong></span
+                >.
+              </p>
+            </div>
+          {:else}
+            <p></p>
+          {/if}
+        </div>
       </div>
     </svelte:fragment>
-    <div style="height: 300vh;">
-      <div class="viz2" style="bottom:2%">
-        {#if visibleRentData.length > 4 && visibleRentData.length <= 5}
-          <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
-          >
-            <p class="visual_caption" in:fade>
-              For generations, homeownership was seen as the cornerstone of the
-              American Dream. A symbol of financial stability and a path towards
-              building generational wealth. But in Boston, that dream seems to
-              be readily slipping out of reach.
-            </p>
-          </div>
-        {:else if visibleRentData.length > 5 && visibleRentData.length <= 9}
-          <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
-          >
-            <p class="visual_caption" in:fade>
-              Above is a graph of the CPI Owners Equivalent Rent for Boston over
-              time, measuring how much homeowners would pay if they had to rent
-              their own homes. Essentially this is another way to track the
-              rising cost of simply having a roof over your head.
-            </p>
-          </div>
-        {:else if visibleRentData.length > 9 && visibleRentData.length <= 15}
-          <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
-          >
-            <p class="visual_caption" in:fade>
-              In Boston, where corporate ownership of housing has been rising
-              dramatically over the last twenty years, these rent increases
-              aren’t just abstract numbers. They represent the real pressure on
-              real people – tenants like Tim, who are finding it harder every
-              year to save, move or dream about home ownership.
-            </p>
-          </div>
-        {:else if visibleRentData.length > 15 && visibleRentData.length <= 20}
-          <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black;"
-          >
-            <p class="visual_caption" in:fade>
-              These trends set the stage for the rest of our story as rent eats
-              up a larger share of income, <span class="highlight"
-                ><strong
-                  >corporate landlords expand their control over the housing
-                  market</strong
-                ></span
-              >
-              and
-              <span class="highlight"><strong>evictions rise</strong></span> and
-              <span class="highlight"
-                ><strong>communities are pushed out</strong></span
-              >.
-            </p>
-          </div>
-        {:else}
-          <p></p>
-        {/if}
-      </div>
-    </div>
+    <div style="height: 300vh;"></div>
   </Scrolly>
-
   <!-- TRANSITION TO VISUAL 4-->
   <div
     id="rent"
@@ -997,7 +922,7 @@
       </div>
     </svelte:fragment>
     <div style="height: 300vh; width: 20vw">
-      <div class="viz2" style="bottom: 10%">
+      <div class="viz2" style="bottom: 5%">
         {#if walletYear >= 2009 && walletYear <= 2011}
           <div
             style="background-color: #F8F1E5; width: 100%; outline: 2px solid black; padding:10px"
@@ -1147,9 +1072,7 @@
     <div style="height: 200vh;">
       <div class="viz2" style="bottom:5%">
         {#if evictionProgress > 30 && evictionProgress < 44}
-          <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black; font-size: 20px;"
-          >
+          <div class="caption">
             <p class="visual_caption" in:fade>
               By 2019 cracks are already forming in Boston’s housing system, and
               between 2019 and 2020 revealed how fragile things had become.When
@@ -1162,9 +1085,7 @@
             </p>
           </div>
         {:else if evictionProgress > 45 && evictionProgress < 64}
-          <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black; font-size: 20px;"
-          >
+          <div class="caption">
             <p class="visual_caption" in:fade>
               Today, eviction filings average over 3,000 cases a month, more
               than 15% higher than pre-pandemic levels. In Boston, eviction
@@ -1182,9 +1103,7 @@
             </p>
           </div>
         {:else if evictionProgress > 65 && evictionProgress < 84}
-          <div
-            style="background-color: #F8F1E5; width: 90%; outline: 2px solid black; font-size: 20px;"
-          >
+          <div class="caption">
             <p class="visual_caption" in:fade>
               The pie chart highlights this human cost: the majority of
               evictions today are due to missed rent payments. And the 3D map
@@ -1368,10 +1287,20 @@
   .red {
     color: #8b0000;
   }
-  .visual_caption {
+  .caption {
+    background-color: #f8f1e5;
+    width: 90%;
+    outline: 2px solid black;
+    padding-left: 2em;
+    padding-right: 2em;
+  }
+  /* .visual_caption {
     font-size: 24px;
     padding-left: 1em;
     padding-right: 1em;
+  } */
+  .visual_caption_text {
+    margin-bottom: 0;
   }
   .navbar-progress {
     position: fixed;
@@ -1485,19 +1414,6 @@
     text-align: center;
     pointer-events: none;
   }
-  .viz3 {
-    max-width: 100vw;
-    position: fixed;
-    width: 20vw;
-    bottom: 40%;
-    left: 10%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    text-align: center;
-    pointer-events: none;
-  }
   .video-wrapper {
     width: 500px;
     height: auto;
@@ -1532,8 +1448,6 @@
 
   .corp-text .visual_caption {
     font-size: 100%;
-    padding-left: 1em;
-    padding-right: 1em;
     background-color: #f8f1e5;
     width: 95%;
     outline: 2px solid black;
@@ -1547,7 +1461,8 @@
   }
 
   .small-corp-text {
-    font-size: 10%;
+    /* font-size: medium; */
+    font-size: 75%;
     /* position: fixed; */
     /* margin-bottom: 20px */
   }

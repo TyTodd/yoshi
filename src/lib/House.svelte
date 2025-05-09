@@ -166,10 +166,10 @@
 <style>
   .building-legend {
     display: flex;
-    padding-left: 40%;
+    padding-left: 50%;
     justify-content: center;
     gap: 16px;
-    margin-top: 1rem;
+    margin-top: -25px;
     flex-wrap: wrap;
   }
 
@@ -209,8 +209,8 @@
   }
   .centered-tooltip-wrapper {
     position: absolute;
-    top: 110%;
-    left: 40%;
+    top: 100%;
+    left: 30%;
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 10;
