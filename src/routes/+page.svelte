@@ -287,7 +287,7 @@
         <h2>The Death of the American Dream in Boston</h2>
         <img
           src={images.bostonSkyLine}
-          alt="People wearing masks"
+          alt="Boston skyline painting"
           style="max-width: 700px; width: 700px; object-fit: cover; border-radius: 50%;"
         />
         <hr />
@@ -324,9 +324,10 @@
           style="padding-left:100px; width: 50%"
         >
           <p>
-            State eviction filings now average 3,000 a month, up more than
+            State eviction filings now average 3,000 a month, up
             <span class="highlight"
-              ><strong>15 percent from pre-pandemic levels</strong></span
+              ><strong>more than 15 percent from pre-pandemic levels</strong
+              ></span
             >, according to Matija Jankovic from the Massachusetts Housing
             Partnership. Housing lawyers and advocates say
             <span class="highlight"
@@ -342,7 +343,7 @@
         </div>
         <img
           src={images.evictionNotice}
-          alt="eviction notice"
+          alt="Women given eviction notice"
           style="max-width: 500px; width: 500px; height: 450px; object-fit: cover; border-radius: 15%;"
         />
       </div>
@@ -360,7 +361,7 @@
       >
         <img
           src={images.vacancyHousing}
-          alt="Guy holding up a house thats heavy"
+          alt="Multiple vacant houses in a neighborhood"
           style="max-width: 500px; width:500px"
         />
         <p style="width:60%;">
@@ -389,7 +390,7 @@
           data-aos="zoom-out"
           data-aos-delay="200"
           src={images.evilCorp}
-          alt="Guy holding up a house thats heavy"
+          alt="Evil presence of corporations looming over city"
           style="max-height: 500px; height: 500px; object-fit: cover; border-radius: 15%;"
         />
         <p style="width: 60%; padding-top: 30px; margin-bottom:0">
@@ -456,7 +457,7 @@
                 <img
                   transition:fade
                   src={images.eviction}
-                  alt="Walking animation"
+                  alt="Person holding an eviction notice"
                   style="width: 400px; border-radius:50%"
                 />
               </div>
@@ -562,7 +563,11 @@
               corporations have stormed into the multifamily apartment market,
               becoming major landlords in American cities, according to
               ProPublica’s analysis of National Multifamily Housing Council
-              data. Private equity is now the dominant form of financial backing
+              data. <span class="highlight"
+                ><strong
+                  >Private equity is now the dominant form of financial backing</strong
+                ></span
+              >
               among the 35 largest owners of multifamily buildings.
             </p>
           </div>
@@ -650,19 +655,19 @@
 
     <!-- scrolling fading text -->
     <div class="scrolling-text">
-      <p in:fade={{ duration: 800 }}>
+      <p data-aos="flip-up" data-aos-delay="400">
         As corporate ownership grows, the character of Boston’s neighborhoods
         begins to change...
       </p>
-      <p in:fade={{ duration: 1600 }}>
+      <p data-aos="flip-up" data-aos-delay="400">
         For residents like Tim, these shifts aren't just statistics...
       </p>
-      <p in:fade={{ duration: 2400 }}>
+      <p data-aos="flip-up" data-aos-delay="400">
         <span class="highlight"
           ><strong>Its the cost of their housing.</strong></span
         >
       </p>
-      <p in:fade={{ duration: 3200 }}>
+      <p data-aos="flip-up" data-aos-delay="400">
         Now let's explore how corporate ownership correlates with the rising
         cost of buying a home.
       </p>
@@ -765,7 +770,7 @@
   >
     <img
       src={images.worried}
-      alt="Guy holding up a house thats heavy"
+      alt="Worried person"
       style="max-width: 400px; width: 400px; object-fit: cover"
     />
     <div>
@@ -874,7 +879,7 @@
   >
     <img
       src={images.rent}
-      alt="Guy holding up a house that's heavy"
+      alt="Guy holding up a heavy house"
       style="max-width: 400px; width: 400px; max-width: 40vw; object-fit: cover; border-radius: 25%;"
     />
     <div style="max-width: 800px; font-size: 28px; text-align: center;">
@@ -994,7 +999,7 @@
     >
       <img
         src={images.frayed}
-        alt="Guy holding up a house that's heavy"
+        alt="Corporations destroying homes"
         style="max-width: 600px; width: 600px; max-width: 40vw; object-fit: cover; border-radius: 5%; position: absolute; left: 5%"
       />
       <div
@@ -1125,7 +1130,7 @@
   >
     <img
       src={images.housing2}
-      alt="People wearing masks"
+      alt="Housing getting more pricey"
       style="max-height: 600px; height: 600px; object-fit: cover; border-radius: 25%;"
     />
     <div>
@@ -1162,7 +1167,7 @@
     </div>
     <img
       src={images.fight}
-      alt="eviction notice"
+      alt="Weighing people being evicted with profit"
       style="max-width: 500px; width: 500px; object-fit: cover; border-radius: 15%;"
     />
   </div>
@@ -1176,7 +1181,7 @@
       <!-- Main centered image -->
       <img
         src={images.bostonArt}
-        alt="eviction notice"
+        alt="Watercolor painting of Boston skyline"
         style="max-width: 800px; width: 800px; object-fit: cover; border-radius: 15%;"
       />
 
@@ -1250,7 +1255,7 @@
       <div style="justify-content: center; display: flex;">
         <img
           src={images.bost}
-          alt="eviction notice"
+          alt="Boston skyline line art "
           style="max-width: 55%; width: 100%; object-fit: cover; margin-top: -150px"
         />
       </div>
