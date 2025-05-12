@@ -510,7 +510,7 @@
   </div>
 
   <!-- VISUAL 1 -->
-  <Scrolly bind:progress={pieProgress}>
+  <Scrolly bind:progress={pieProgress} threshold={-0.3}>
     <h1
       style="
     position: sticky;
@@ -685,7 +685,11 @@
 
   <!-- VISUAL 2 -->
 
-  <Scrolly bind:progress={mapProgress} --scrolly-layout="overlap">
+  <Scrolly
+    bind:progress={mapProgress}
+    --scrolly-layout="overlap"
+    threshold={-0.3}
+  >
     <h1
       style="
       position: sticky;
@@ -918,7 +922,11 @@
   </div>
 
   <!-- VISUAL 4 -->
-  <Scrolly bind:progress={walletProgress} --scrolly-layout="overlap">
+  <Scrolly
+    bind:progress={walletProgress}
+    --scrolly-layout="overlap"
+    threshold={-0.3}
+  >
     <h1
       style="
     position: sticky;
@@ -1060,7 +1068,11 @@
   </Scrolly>
 
   <!-- VISUAL 5 -->
-  <Scrolly bind:progress={evictionProgress} --scrolly-layout="overlap">
+  <Scrolly
+    bind:progress={evictionProgress}
+    --scrolly-layout="overlap"
+    threshold={-0.3}
+  >
     <h1
       style="
     position: sticky;
