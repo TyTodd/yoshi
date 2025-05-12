@@ -670,18 +670,17 @@
         Now let's explore how corporate ownership correlates with the rising
         cost of buying a home.
       </p>
+      <div data-aos="flip-up" data-aos-delay="400" class="instructions">
+        <p><strong>Instructions for using the following visual:</strong></p>
+        <p>
+          Hover over a neighborhood to see neighborhood specific stats. Click on
+          a neighborhood to compare it to boston wide stats then click again to
+          deselect!
+        </p>
+      </div>
     </div>
   </Scrolly>
   <!-- Instructions on using visual 2 -->
-  <div class="instructions">
-    <p>Instructions for using the following visual:</p>
-    <p>
-      Hover over a neighborhood to see neighborhood specific stats (corporate
-      ownership rate and median home price). The line charts demonstrate the
-      boston wide averages, click on a neighborhood to see how it compares to
-      the boston wide stats
-    </p>
-  </div>
 
   <!-- VISUAL 2 -->
 
@@ -807,6 +806,10 @@
         Next, we’ll follow the trajectory of Boston’s rental market, and see how
         it has begun squeezing everyday residents.
       </p>
+      <div data-aos="flip-up" data-aos-delay="400" class="instructions">
+        <p><strong>Instructions for using the following visual:</strong></p>
+        <p>Hover over a building for more information!</p>
+      </div>
     </div>
   </div>
 
@@ -1063,6 +1066,15 @@
           affordability crisis has transformed itself into an eviction crisis —
           reshaping the face of Boston itself.
         </p>
+      </div>
+      <div
+        data-aos="flip-up"
+        data-aos-delay="400"
+        class="instructions"
+        style="position: absolute; top: 75%; left: 60%"
+      >
+        <p><strong>Instructions for using the following visual:</strong></p>
+        <p>Hover over a neighborhood for neighborhood-specific stats!</p>
       </div>
     </div>
   </Scrolly>
@@ -1492,5 +1504,10 @@
     font-size: 75%;
     /* position: fixed; */
     /* margin-bottom: 20px */
+  }
+  .instructions {
+    outline: 1px solid black;
+    font-size: 16px;
+    padding: 1em;
   }
 </style>

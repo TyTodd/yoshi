@@ -376,28 +376,6 @@
             },
           });
         }
-        function makeLabelLayer() {
-          return new TextLayer({
-            id: "neighborhood-labels",
-            data: geojson.features,
-            pickable: false,
-            getPosition: (f) => {
-              const [lng, lat] = turf.centroid(f).geometry.coordinates;
-              const rentIssues =
-                data[f.properties.blockgr2020_ctr_neighb_name]?.[currentYear]
-                  ?.rent_issues || 0;
-              const zOffset = elevationScale_rent(rentIssues) + 200; // 200 meters above top
-              return [lng, lat, zOffset];
-            },
-            getText: (f) => f.properties.blockgr2020_ctr_neighb_name,
-            getSize: 12,
-            getColor: "black",
-            sizeUnits: "meters",
-            sizeScale: 30,
-            fontFamily: "Arial",
-            coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
-          });
-        }
 
         /* ------------------------------------------------------------------
          *  Rendering helpers
@@ -415,10 +393,6 @@
           deckOverlay_eviction.setProps({
             layers: [makeEvictionLayer({ scale: 1, year })],
           });
-          // deckOverlay_eviction.setProps({
-          //   layers: [makeEvictionLayer({ scale: 1, year }), makeLabelLayer()],
-          // });
-
           createPieChart(year);
         }
 
@@ -484,16 +458,6 @@
               }),
             ],
           });
-          // deckOverlay_eviction.setProps({
-          //   layers: [
-          //     makeEvictionLayer({
-          //       scale: 1,
-          //       year: currentYear,
-          //       hover: hoveredHood,
-          //     }),
-          //     makeLabelLayer(),
-          //   ],
-          // });
         }
 
         let evictionPieChart;
@@ -573,13 +537,6 @@
             interleaved: true,
             layers: [makeEvictionLayer({ scale: 1, year: INITIAL_YEAR })],
           });
-          // deckOverlay_eviction = new MapboxOverlay({
-          //   interleaved: true,
-          //   layers: [
-          //     makeEvictionLayer({ scale: 1, year: INITIAL_YEAR }),
-          //     makeLabelLayer(),
-          //   ],
-          // });
           eviction_map.addControl(deckOverlay_eviction);
           createPieChart(INITIAL_YEAR);
 
