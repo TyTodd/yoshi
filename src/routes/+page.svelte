@@ -113,10 +113,8 @@
   let pieProgress = 0;
   let selectedYear = 0;
   let selectedIndex = -1;
-  const PIE_DELAY = 23;
 
   // Wallet
-  const WALLET_DELAY = 18;
   $: walletProgress = 0;
 
   const walletYearScale = d3
@@ -124,11 +122,6 @@
     .domain([0, 100])
     .range([2005, 2021])
     .clamp(true);
-  $: adjustedWalletProgress =
-    Math.max(
-      0,
-      Math.min(1, (walletProgress - WALLET_DELAY) / (100 - WALLET_DELAY))
-    ) * 100;
 
   // RENT CHART
   const rent_data = rentData.map((d) => ({
@@ -144,20 +137,15 @@
   /* ----------------------- 3-D MAP (parent / iframe driver) ----------------------- */
   const MIN = 2004;
   const MAX = 2024;
-  const DELAY = 18;
+  const SLOW = 0.01;
   let mapProgress = 0; // 0 → 1 from <Scrolly>
   let mapYear = MIN; // integer we send to iframe
   let frame; // <iframe> reference
 
   $: {
-    if (mapProgress <= DELAY) {
-      mapYear = MIN;
-    } else {
-      const progressRange = 100 - DELAY;
-      const adjusted = (mapProgress - DELAY) / progressRange;
-      const clamped = Math.max(0, Math.min(1, adjusted));
-      mapYear = Math.round(MIN + clamped * (MAX - MIN));
-    }
+    // apply the “gear-ratio” then clamp to 1
+    const p = Math.min(mapProgress * SLOW, 1);
+    mapYear = Math.round(MIN + p * (MAX - MIN));
   }
 
   // push every new year to the iframe
@@ -174,26 +162,16 @@
   /* ----------------------- EVICTION 3-D MAP (parent / iframe driver) ----------------------- */
   const MIN_evict = 2019;
   const MAX_evict = 2024;
-  const EVICTION_DELARY = 25;
 
   let evictionProgress = 0; // 0 → 1 from <Scrolly>
   let evictionMapYear = MIN_evict; // integer we send to iframe
   let evictionFrame; // <iframe> reference
 
   $: {
-    if (evictionProgress <= EVICTION_DELARY) {
-      evictionMapYear = MIN_evict;
-    } else {
-      const progressRange = 100 - EVICTION_DELARY;
-      const adjusted = (evictionProgress - EVICTION_DELARY) / progressRange;
-      const clamped = Math.max(0, Math.min(1, adjusted));
-      evictionMapYear = Math.round(
-        MIN_evict + clamped * (MAX_evict - MIN_evict)
-      );
-    }
+    // apply the “gear-ratio” then clamp to 1
+    const p = Math.min(evictionProgress * SLOW, 1);
+    evictionMapYear = Math.round(MIN_evict + p * (MAX_evict - MIN_evict));
   }
-  // $: console.log("progress", evictionProgress);
-  $: console.log("year", evictionMapYear);
 
   // push every new year to the iframe
   $: if (evictionFrame?.contentWindow) {
@@ -260,12 +238,11 @@
   });
 
   $: if (pieData.length) {
-    const usableRange = 100 - PIE_DELAY;
-    const adjusted = (pieProgress - PIE_DELAY) / usableRange;
-    const clamped = Math.max(0, Math.min(1, adjusted));
-    const step = 1 / pieData.length;
-
-    selectedYear = Math.min(pieData.length - 1, Math.floor(clamped / step));
+    const step = 100 / pieData.length; // % each year occupies
+    selectedYear = Math.max(
+      0,
+      Math.min(pieData.length - 1, Math.floor(pieProgress / step))
+    );
   }
   $: if (rent_data.length) {
     const step = 100 / rent_data.length;
@@ -956,9 +933,7 @@
     </h1>
     <svelte:fragment slot="viz">
       <div style="transform: scale(1.8); transform-origin: top center;">
-        <Wallet
-          selectedYear={Math.round(walletYearScale(adjustedWalletProgress))}
-        />
+        <Wallet selectedYear={Math.round(walletYearScale(walletProgress))} />
       </div>
     </svelte:fragment>
     <div style="height: 300vh; width: 20vw">
