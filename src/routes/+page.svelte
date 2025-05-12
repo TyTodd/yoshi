@@ -12,50 +12,50 @@
   import "aos/dist/aos.css";
 
   //Images for the actual website
-  // const images = {
-  //   peopleWearingMasks: "/yoshi/images/people_wearing_masks.jpeg",
-  //   worried: "/yoshi/images/worried.png",
-  //   evictionNotice: "/yoshi/images/eviction_notice.png",
-  //   eviction: "/yoshi/images/evictionNotice2.jpg",
-  //   movingGif: "/yoshi/images/moving.gif",
-  //   evilCorp: "/yoshi/images/evil_corps.png",
-  //   frayed: "/yoshi/images/frayed.png",
-  //   cantReachVideo: "/yoshi/images/cantReach.mp4",
-  //   housing2: "/yoshi/images/housing2.png",
-  //   fight: "/yoshi/images/fight.png",
-  //   bostonArt: "/yoshi/images/bostonArt.jpeg",
-  //   bostonSkyLine: "/yoshi/images/bostonSkyline.jpg",
-  //   vacancyHousing: "/yoshi/images/vacancy.jpeg",
-  //   rent: "/yoshi/images/rentBurden.png",
-  //   bost: "/yoshi/images/bost_transparent.png",
-  // };
-  // const walkingImages = Array.from(
-  //   { length: frameCount },
-  //   (_, i) => `/yoshi/images/walking/walking${i + 1}.png`
-  // );
-
-  //Images for the local host website
   const images = {
-    peopleWearingMasks: "/images/people_wearing_masks.jpeg",
-    worried: "/images/worried.png",
-    evictionNotice: "/images/eviction_notice.png",
-    eviction: "/images/evictionNotice2.jpg",
-    movingGif: "/images/moving.gif",
-    evilCorp: "/images/evil_corps.png",
-    frayed: "/images/frayed.png",
-    cantReachVideo: "/images/cantReach.mp4",
-    housing2: "/images/housing2.png",
-    fight: "/images/fight.png",
-    bostonArt: "/images/bostonArt.jpeg",
-    bostonSkyLine: "/images/bostonSkyline.jpg",
-    vacancyHousing: "/images/vacancy.jpeg",
-    rent: "/images/rentBurden.png",
-    bost: "/images/bost_transparent.png",
+    peopleWearingMasks: "/yoshi/images/people_wearing_masks.jpeg",
+    worried: "/yoshi/images/worried.png",
+    evictionNotice: "/yoshi/images/eviction_notice.png",
+    eviction: "/yoshi/images/evictionNotice2.jpg",
+    movingGif: "/yoshi/images/moving.gif",
+    evilCorp: "/yoshi/images/evil_corps.png",
+    frayed: "/yoshi/images/frayed.png",
+    cantReachVideo: "/yoshi/images/cantReach.mp4",
+    housing2: "/yoshi/images/housing2.png",
+    fight: "/yoshi/images/fight.png",
+    bostonArt: "/yoshi/images/bostonArt.jpeg",
+    bostonSkyLine: "/yoshi/images/bostonSkyline.jpg",
+    vacancyHousing: "/yoshi/images/vacancy.jpeg",
+    rent: "/yoshi/images/rentBurden.png",
+    bost: "/yoshi/images/bost_transparent.png",
   };
   const walkingImages = Array.from(
     { length: frameCount },
-    (_, i) => `/images/walking/walking${i + 1}.png`
+    (_, i) => `/yoshi/images/walking/walking${i + 1}.png`
   );
+
+  //Images for the local host website
+  // const images = {
+  //   peopleWearingMasks: "/images/people_wearing_masks.jpeg",
+  //   worried: "/images/worried.png",
+  //   evictionNotice: "/images/eviction_notice.png",
+  //   eviction: "/images/evictionNotice2.jpg",
+  //   movingGif: "/images/moving.gif",
+  //   evilCorp: "/images/evil_corps.png",
+  //   frayed: "/images/frayed.png",
+  //   cantReachVideo: "/images/cantReach.mp4",
+  //   housing2: "/images/housing2.png",
+  //   fight: "/images/fight.png",
+  //   bostonArt: "/images/bostonArt.jpeg",
+  //   bostonSkyLine: "/images/bostonSkyline.jpg",
+  //   vacancyHousing: "/images/vacancy.jpeg",
+  //   rent: "/images/rentBurden.png",
+  //   bost: "/images/bost_transparent.png",
+  // };
+  // const walkingImages = Array.from(
+  //   { length: frameCount },
+  //   (_, i) => `/images/walking/walking${i + 1}.png`
+  // );
 
   //text
   let introProgress;
