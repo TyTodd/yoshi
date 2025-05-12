@@ -12,56 +12,55 @@
   import "aos/dist/aos.css";
 
   //Images for the actual website
-  const images = {
-    peopleWearingMasks: "/yoshi/images/people_wearing_masks.jpeg",
-    worried: "/yoshi/images/worried.png",
-    evictionNotice: "/yoshi/images/eviction_notice.png",
-    eviction: "/yoshi/images/evictionNotice2.jpg",
-    movingGif: "/yoshi/images/moving.gif",
-    evilCorp: "/yoshi/images/evil_corps.png",
-    frayed: "/yoshi/images/frayed.png",
-    cantReachVideo: "/yoshi/images/cantReach.mp4",
-    housing2: "/yoshi/images/housing2.png",
-    fight: "/yoshi/images/fight.png",
-    bostonArt: "/yoshi/images/bostonArt.jpeg",
-    bostonSkyLine: "/yoshi/images/bostonSkyline.jpg",
-    vacancyHousing: "/yoshi/images/vacancy.jpeg",
-    rent: "/yoshi/images/rentBurden.png",
-    bost: "/yoshi/images/bost_transparent.png",
-  };
-  const walkingImages = Array.from(
-    { length: frameCount },
-    (_, i) => `/yoshi/images/walking/walking${i + 1}.png`
-  );
-
-  //Images for the local host website
   // const images = {
-  //   peopleWearingMasks: "/images/people_wearing_masks.jpeg",
-  //   worried: "/images/worried.png",
-  //   evictionNotice: "/images/eviction_notice.png",
-  //   eviction: "/images/evictionNotice2.jpg",
-  //   movingGif: "/images/moving.gif",
-  //   evilCorp: "/images/evil_corps.png",
-  //   frayed: "/images/frayed.png",
-  //   cantReachVideo: "/images/cantReach.mp4",
-  //   housing2: "/images/housing2.png",
-  //   fight: "/images/fight.png",
-  //   bostonArt: "/images/bostonArt.jpeg",
-  //   bostonSkyLine: "/images/bostonSkyline.jpg",
-  //   vacancyHousing: "/images/vacancy.jpeg",
-  //   rent: "/images/rentBurden.png",
-  //   bost: "/images/bost_transparent.png",
+  //   peopleWearingMasks: "/yoshi/images/people_wearing_masks.jpeg",
+  //   worried: "/yoshi/images/worried.png",
+  //   evictionNotice: "/yoshi/images/eviction_notice.png",
+  //   eviction: "/yoshi/images/evictionNotice2.jpg",
+  //   movingGif: "/yoshi/images/moving.gif",
+  //   evilCorp: "/yoshi/images/evil_corps.png",
+  //   frayed: "/yoshi/images/frayed.png",
+  //   cantReachVideo: "/yoshi/images/cantReach.mp4",
+  //   housing2: "/yoshi/images/housing2.png",
+  //   fight: "/yoshi/images/fight.png",
+  //   bostonArt: "/yoshi/images/bostonArt.jpeg",
+  //   bostonSkyLine: "/yoshi/images/bostonSkyline.jpg",
+  //   vacancyHousing: "/yoshi/images/vacancy.jpeg",
+  //   rent: "/yoshi/images/rentBurden.png",
+  //   bost: "/yoshi/images/bost_transparent.png",
   // };
   // const walkingImages = Array.from(
   //   { length: frameCount },
-  //   (_, i) => `/images/walking/walking${i + 1}.png`
+  //   (_, i) => `/yoshi/images/walking/walking${i + 1}.png`
   // );
+
+  //Images for the local host website
+  const images = {
+    peopleWearingMasks: "/images/people_wearing_masks.jpeg",
+    worried: "/images/worried.png",
+    evictionNotice: "/images/eviction_notice.png",
+    eviction: "/images/evictionNotice2.jpg",
+    movingGif: "/images/moving.gif",
+    evilCorp: "/images/evil_corps.png",
+    frayed: "/images/frayed.png",
+    cantReachVideo: "/images/cantReach.mp4",
+    housing2: "/images/housing2.png",
+    fight: "/images/fight.png",
+    bostonArt: "/images/bostonArt.jpeg",
+    bostonSkyLine: "/images/bostonSkyline.jpg",
+    vacancyHousing: "/images/vacancy.jpeg",
+    rent: "/images/rentBurden.png",
+    bost: "/images/bost_transparent.png",
+  };
+  const walkingImages = Array.from(
+    { length: frameCount },
+    (_, i) => `/images/walking/walking${i + 1}.png`
+  );
 
   //text
   let introProgress;
   let transitionProgress;
   let scrollProgress;
-  // let endingProgress;
 
   //Navbar progress
   const updateProgress = () => {
@@ -114,6 +113,10 @@
   let pieProgress = 0;
   let selectedYear = 0;
   let selectedIndex = -1;
+  const PIE_DELAY = 23;
+
+  // Wallet
+  const WALLET_DELAY = 18;
   $: walletProgress = 0;
 
   const walletYearScale = d3
@@ -121,6 +124,11 @@
     .domain([0, 100])
     .range([2005, 2021])
     .clamp(true);
+  $: adjustedWalletProgress =
+    Math.max(
+      0,
+      Math.min(1, (walletProgress - WALLET_DELAY) / (100 - WALLET_DELAY))
+    ) * 100;
 
   // RENT CHART
   const rent_data = rentData.map((d) => ({
@@ -132,6 +140,66 @@
   let rentProgress = 0;
   let rentYearIndex = -1;
   let visibleRentData = [];
+
+  /* ----------------------- 3-D MAP (parent / iframe driver) ----------------------- */
+  const MIN = 2004;
+  const MAX = 2024;
+  const DELAY = 18;
+  let mapProgress = 0; // 0 → 1 from <Scrolly>
+  let mapYear = MIN; // integer we send to iframe
+  let frame; // <iframe> reference
+
+  $: {
+    if (mapProgress <= DELAY) {
+      mapYear = MIN;
+    } else {
+      const progressRange = 100 - DELAY;
+      const adjusted = (mapProgress - DELAY) / progressRange;
+      const clamped = Math.max(0, Math.min(1, adjusted));
+      mapYear = Math.round(MIN + clamped * (MAX - MIN));
+    }
+  }
+
+  // push every new year to the iframe
+  $: if (frame?.contentWindow) {
+    frame.contentWindow.postMessage({ year: mapYear }, "*");
+  }
+
+  // send initial year once the iframe finishes loading
+  function handleLoad(e) {
+    const win = e.target.contentWindow;
+    if (win) win.postMessage({ year: mapYear }, "*");
+  }
+
+  /* ----------------------- EVICTION 3-D MAP (parent / iframe driver) ----------------------- */
+  const MIN_evict = 2019;
+  const MAX_evict = 2024;
+  const EVICTION_DELARY = 25;
+
+  let evictionProgress = 0; // 0 → 1 from <Scrolly>
+  let evictionMapYear = MIN_evict; // integer we send to iframe
+  let evictionFrame; // <iframe> reference
+
+  $: {
+    if (evictionProgress <= EVICTION_DELARY) {
+      evictionMapYear = MIN_evict;
+    } else {
+      const progressRange = 100 - EVICTION_DELARY;
+      const adjusted = (evictionProgress - EVICTION_DELARY) / progressRange;
+      const clamped = Math.max(0, Math.min(1, adjusted));
+      evictionMapYear = Math.round(
+        MIN_evict + clamped * (MAX_evict - MIN_evict)
+      );
+    }
+  }
+  // $: console.log("progress", evictionProgress);
+  $: console.log("year", evictionMapYear);
+
+  // push every new year to the iframe
+  $: if (evictionFrame?.contentWindow) {
+    evictionFrame.contentWindow.postMessage({ year: evictionMapYear }, "*");
+  }
+  $: walletYear = Math.round(walletYearScale(walletProgress));
 
   onMount(async () => {
     AOS.init();
@@ -192,11 +260,12 @@
   });
 
   $: if (pieData.length) {
-    const step = 100 / pieData.length; // % each year occupies
-    selectedYear = Math.max(
-      0,
-      Math.min(pieData.length - 1, Math.floor(pieProgress / step))
-    );
+    const usableRange = 100 - PIE_DELAY;
+    const adjusted = (pieProgress - PIE_DELAY) / usableRange;
+    const clamped = Math.max(0, Math.min(1, adjusted));
+    const step = 1 / pieData.length;
+
+    selectedYear = Math.min(pieData.length - 1, Math.floor(clamped / step));
   }
   $: if (rent_data.length) {
     const step = 100 / rent_data.length;
@@ -206,53 +275,6 @@
     );
     visibleRentData = rent_data.slice(0, rentYearIndex + 1);
   }
-
-  /* ----------------------- 3-D MAP (parent / iframe driver) ----------------------- */
-  const MIN = 2004;
-  const MAX = 2024;
-  const SLOW = 0.01;
-
-  let mapProgress = 0; // 0 → 1 from <Scrolly>
-  let mapYear = MIN; // integer we send to iframe
-  let frame; // <iframe> reference
-
-  // convert scroll progress → year
-  $: {
-    // apply the “gear-ratio” then clamp to 1
-    const p = Math.min(mapProgress * SLOW, 1);
-    mapYear = Math.round(MIN + p * (MAX - MIN));
-  }
-
-  // push every new year to the iframe
-  $: if (frame?.contentWindow) {
-    frame.contentWindow.postMessage({ year: mapYear }, "*");
-  }
-
-  // send initial year once the iframe finishes loading
-  function handleLoad(e) {
-    const win = e.target.contentWindow;
-    if (win) win.postMessage({ year: mapYear }, "*");
-  }
-
-  /* ----------------------- 3-D MAP (parent / iframe driver) ----------------------- */
-  const MIN_evict = 2020;
-  const MAX_evict = 2024;
-
-  let evictionProgress = 0; // 0 → 1 from <Scrolly>
-  let evictionMapYear = MIN_evict; // integer we send to iframe
-  let evictionFrame; // <iframe> reference
-
-  $: {
-    // apply the “gear-ratio” then clamp to 1
-    const p = Math.min(evictionProgress * SLOW, 1);
-    evictionMapYear = Math.round(MIN_evict + p * (MAX_evict - MIN_evict));
-  }
-
-  // push every new year to the iframe
-  $: if (evictionFrame?.contentWindow) {
-    evictionFrame.contentWindow.postMessage({ year: evictionMapYear }, "*");
-  }
-  $: walletYear = Math.round(walletYearScale(walletProgress));
 </script>
 
 <svelte:head>
@@ -511,7 +533,7 @@
   </div>
 
   <!-- VISUAL 1 -->
-  <Scrolly bind:progress={pieProgress} --scrolly-layout="overlay">
+  <Scrolly bind:progress={pieProgress}>
     <h1
       style="
     position: sticky;
@@ -673,8 +695,19 @@
       </p>
     </div>
   </Scrolly>
+  <!-- Instructions on using visual 2 -->
+  <div class="instructions">
+    <p>Instructions for using the following visual:</p>
+    <p>
+      Hover over a neighborhood to see neighborhood specific stats (corporate
+      ownership rate and median home price). The line charts demonstrate the
+      boston wide averages, click on a neighborhood to see how it compares to
+      the boston wide stats
+    </p>
+  </div>
 
   <!-- VISUAL 2 -->
+
   <Scrolly bind:progress={mapProgress} --scrolly-layout="overlap">
     <h1
       style="
@@ -692,7 +725,7 @@
     <svelte:fragment slot="viz">
       <div style="height: 100vh; display:flex; flex-direction: column;">
         <div
-          style="width: 100%; height: 80%; overflow: hidden; position: relative;"
+          style="position: sticky; width: 100%; height: 80%; overflow: hidden; position: relative;"
         >
           <iframe
             bind:this={frame}
@@ -923,7 +956,9 @@
     </h1>
     <svelte:fragment slot="viz">
       <div style="transform: scale(1.8); transform-origin: top center;">
-        <Wallet selectedYear={Math.round(walletYearScale(walletProgress))} />
+        <Wallet
+          selectedYear={Math.round(walletYearScale(adjustedWalletProgress))}
+        />
       </div>
     </svelte:fragment>
     <div style="height: 300vh; width: 20vw">

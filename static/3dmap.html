@@ -9,6 +9,7 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
     <link
       rel="stylesheet"
@@ -158,6 +159,7 @@
       </div>
       <!--‑‑ Line graph ------------------------------------------------------------- -->
       <div id="chart-wrapper">
+        <h1 id="current-year-display">Year: 2004</h1>
         <canvas id="corpChart"></canvas>
         <canvas id="houseChart"></canvas>
       </div>
@@ -210,9 +212,13 @@
          * ----------------------------------------------------------------*/
         const START_YEAR = 2004;
         const END_YEAR = 2024;
-        const INITIAL_YEAR = 2024;
+        const INITIAL_YEAR = 2004;
         let currentYear = INITIAL_YEAR;
         let selectedHood = null;
+        let selectedHoodColor = null;
+        let selectedHoodCentroid_house = null;
+        let selectedHoodCentroid_corp = null;
+
         const filteredColors = d3.schemeTableau10.filter(
           (color) => color !== "#4e79a7" && color !== "#e15759"
         );
@@ -323,23 +329,9 @@
         /* ------------------------------------------------------------------
          *  Scales
          * ----------------------------------------------------------------*/
-        /* --- Colour ramp (blue ▸ turquoise ▸ orange ▸ red) --- */
-        // const COLOR_RAMP = ["#4593b6", "#77d8cc", "#f4ad62", "#c3424f"];
         //Corporate scales
         const minRate = 0.0;
         const maxRate = 0.69;
-
-        // const colorScaleCorp = d3
-        //   .scaleLinear()
-        //   .domain(
-        //     d3.range(
-        //       minRate,
-        //       maxRate,
-        //       (maxRate - minRate) / (COLOR_RAMP.length - 1)
-        //     )
-        //   )
-        //   .range(COLOR_RAMP)
-        //   .interpolate(d3.interpolateLab);
         const baseColor = d3.lab("#d5912f"); // Convert to perceptual color space
 
         const COLOR_RAMP = d3
@@ -421,7 +413,19 @@
             wireframe: true,
             stroked: true,
             lineWidthMinPixels: 1,
-            getLineColor: [255, 255, 255, 255],
+            // getLineColor: [255, 255, 255, 255],
+            getLineColor: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              if (hood === selectedHood && selectedHoodColor) {
+                return [
+                  selectedHoodColor.r,
+                  selectedHoodColor.g,
+                  selectedHoodColor.b,
+                  255,
+                ];
+              }
+              return [255, 255, 255, 255]; // default white outline
+            },
             effects: [lightingEffect],
             coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
 
@@ -453,6 +457,7 @@
             updateTriggers: {
               getElevation: [scale, year],
               getFillColor: [hover, year],
+              getLineColor: [selectedHood, selectedHoodColor],
             },
           });
         }
@@ -466,7 +471,21 @@
             wireframe: true,
             stroked: true,
             lineWidthMinPixels: 1,
-            getLineColor: [255, 255, 255, 255],
+
+            // getLineColor: [255, 255, 255, 255],
+            getLineColor: (f) => {
+              const hood = f.properties.blockgr2020_ctr_neighb_name?.trim();
+              if (hood === selectedHood && selectedHoodColor) {
+                return [
+                  selectedHoodColor.r,
+                  selectedHoodColor.g,
+                  selectedHoodColor.b,
+                  255,
+                ];
+              }
+              return [255, 255, 255, 255]; // default white outline
+            },
+
             effects: [lightingEffect],
             coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
 
@@ -496,7 +515,54 @@
             updateTriggers: {
               getElevation: [scale, year],
               getFillColor: [hover, year],
+              getLineColor: [selectedHood, selectedHoodColor],
             },
+          });
+        }
+
+        function makeHouseMarker() {
+          if (!selectedHoodCentroid_house || !selectedHoodColor) return null;
+
+          return new deck.ScatterplotLayer({
+            id: "hood-marker-house",
+            data: [selectedHoodCentroid_house],
+            getPosition: (d) => d,
+            getRadius: 400,
+            radiusUnits: "meters",
+            getFillColor: [
+              selectedHoodColor.r,
+              selectedHoodColor.g,
+              selectedHoodColor.b,
+              255,
+            ],
+            getLineColor: [0, 0, 0, 255],
+            stroked: true,
+            lineWidthUnits: "pixels",
+            lineWidthMinPixels: 1,
+            pickable: false,
+          });
+        }
+
+        function makeCorpMarker() {
+          if (!selectedHoodCentroid_corp || !selectedHoodColor) return null;
+
+          return new deck.ScatterplotLayer({
+            id: "hood-marker-corp",
+            data: [selectedHoodCentroid_corp],
+            getPosition: (d) => d,
+            getRadius: 400,
+            radiusUnits: "meters",
+            getFillColor: [
+              selectedHoodColor.r,
+              selectedHoodColor.g,
+              selectedHoodColor.b,
+              255,
+            ],
+            getLineColor: [0, 0, 0, 255],
+            stroked: true,
+            lineWidthUnits: "pixels",
+            lineWidthMinPixels: 1,
+            pickable: false,
           });
         }
 
@@ -509,15 +575,9 @@
           if (sliderEl.value !== String(year)) sliderEl.value = year;
 
           currentYear = year;
-          // aggregated = aggregateByYear(data, 2004, 2024);
-          // drawCharts(aggregated);
-
-          deckOverlay_corp.setProps({
-            layers: [makeCorpLayer({ scale: 1, year })],
-          });
-          deckOverlay_house.setProps({
-            layers: [makeHouseLayer({ scale: 1, year })],
-          });
+          document.getElementById(
+            "current-year-display"
+          ).textContent = `Year: ${year}`;
 
           // chart highlight
           const yearIndex = corpChart.data.labels.indexOf(year);
@@ -566,7 +626,55 @@
           if (selectedHood) {
             const rows = aggregateByYear(data, START_YEAR, END_YEAR);
             showHood(selectedHood, rows);
+            const feature = geojson.features.find(
+              (f) =>
+                f.properties.blockgr2020_ctr_neighb_name?.trim() ===
+                selectedHood
+            );
+            if (feature) {
+              const baseCentroid = turf.centroid(feature).geometry.coordinates;
+
+              const housePrice =
+                data[selectedHood]?.[currentYear]?.median_house_price;
+              const houseElevation =
+                housePrice != null ? elevationScale_house(housePrice) : 0;
+              selectedHoodCentroid_house = [
+                ...baseCentroid,
+                houseElevation + 100,
+              ];
+
+              const corpRate = data[selectedHood]?.[currentYear]?.corp_own_rate;
+              const corpElevation =
+                corpRate != null ? elevationScale_corp(corpRate) : 0;
+              selectedHoodCentroid_corp = [
+                ...baseCentroid,
+                corpElevation + 100,
+              ];
+            }
           }
+
+          //Re-render maps
+          deckOverlay_corp.setProps({
+            layers: [
+              makeCorpLayer({
+                scale: 1,
+                year: currentYear,
+                hover: hoveredHood,
+              }),
+              makeCorpMarker(),
+            ].filter(Boolean), // in case makePinLayer returns null
+          });
+
+          deckOverlay_house.setProps({
+            layers: [
+              makeHouseLayer({
+                scale: 1,
+                year: currentYear,
+                hover: hoveredHood,
+              }),
+              makeHouseMarker(),
+            ].filter(Boolean), // in case makePinLayer returns null
+          });
         }
 
         function attachEvents() {
@@ -623,7 +731,8 @@
                 year: currentYear,
                 hover: hoveredHood,
               }),
-            ],
+              makeCorpMarker(),
+            ].filter(Boolean),
           });
           deckOverlay_house.setProps({
             layers: [
@@ -632,24 +741,53 @@
                 year: currentYear,
                 hover: hoveredHood,
               }),
-            ],
+              makeHouseMarker(),
+            ].filter(Boolean), // in case makePinLayer returns null
           });
         }
+
         function handleClick({ object }) {
           if (!object) return;
           const hood = object.properties.blockgr2020_ctr_neighb_name?.trim();
           const rows = aggregateByYear(data, START_YEAR, END_YEAR);
 
           if (hood === selectedHood) {
-            // clicked the same hood → hide it
             hideHood();
             selectedHood = null;
+            selectedHoodColor = null;
           } else {
-            // new hood → replace / add
-            if (selectedHood) hideHood(); // remove old one first
+            if (selectedHood) hideHood();
+
             showHood(hood, rows);
             selectedHood = hood;
+            selectedHoodColor = d3.color(hoodColor(hood));
+
+            // Calculate centroid using turf
+            const feature = geojson.features.find(
+              (f) => f.properties.blockgr2020_ctr_neighb_name?.trim() === hood
+            );
+            if (feature) {
+              const baseCentroid = turf.centroid(feature).geometry.coordinates;
+
+              const housePrice =
+                data[selectedHood]?.[currentYear]?.median_house_price;
+              const houseElevation =
+                housePrice != null ? elevationScale_house(housePrice) : 0;
+              selectedHoodCentroid_house = [
+                ...baseCentroid,
+                houseElevation + 100,
+              ];
+
+              const corpRate = data[selectedHood]?.[currentYear]?.corp_own_rate;
+              const corpElevation =
+                corpRate != null ? elevationScale_corp(corpRate) : 0;
+              selectedHoodCentroid_corp = [
+                ...baseCentroid,
+                corpElevation + 100,
+              ];
+            }
           }
+
           corpChart.update();
           houseChart.update();
         }
@@ -931,12 +1069,19 @@
 
           deckOverlay_corp = new MapboxOverlay({
             interleaved: true,
-            layers: [makeCorpLayer({ scale: 1, year: INITIAL_YEAR })],
+            layers: [
+              makeCorpLayer({ scale: 1, year: INITIAL_YEAR }),
+              makeCorpMarker(),
+            ],
           });
           deckOverlay_house = new MapboxOverlay({
             interleaved: true,
-            layers: [makeHouseLayer({ scale: 1, year: INITIAL_YEAR })],
+            layers: [
+              makeHouseLayer({ scale: 1, year: INITIAL_YEAR }),
+              makeHouseMarker(),
+            ],
           });
+
           corp_map.addControl(deckOverlay_corp);
           house_map.addControl(deckOverlay_house);
 
